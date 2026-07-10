@@ -50,34 +50,18 @@ export default function TrackOrderPage({ params }) {
         <p style={{ color: 'var(--text-secondary)', marginBottom: 24 }}>The tracking link might be invalid or expired.</p>
         
         <div style={{ width: '100%', maxWidth: 400, marginBottom: 24 }}>
-          <div style={{ display: 'flex', gap: 10 }}>
+          <div className="track-search-container">
             <input 
               type="text" 
               placeholder="Enter another Order ID"
               value={searchOrderId}
               onChange={(e) => setSearchOrderId(e.target.value)}
-              style={{ 
-                flex: 1, 
-                padding: '12px 16px', 
-                borderRadius: 12, 
-                border: '1px solid #e2e8f0', 
-                fontSize: 14, 
-                outline: 'none',
-                background: '#fff'
-              }}
+              className="track-search-input"
+              style={{ background: '#fff' }}
             />
             <button 
               onClick={() => searchOrderId.trim() && router.push(`/track/${searchOrderId.trim().toLowerCase()}`)}
-              style={{ 
-                padding: '0 24px', 
-                background: 'var(--brand-primary)', 
-                color: '#fff', 
-                border: 'none', 
-                borderRadius: 12, 
-                fontSize: 14, 
-                fontWeight: 800, 
-                cursor: 'pointer' 
-              }}
+              className="track-search-btn"
             >
               Track
             </button>
@@ -123,7 +107,7 @@ export default function TrackOrderPage({ params }) {
         <ArrowLeft size={16} /> Back to Home
       </Link>
 
-      <div style={{ background: '#fff', borderRadius: 20, padding: 24, boxShadow: '0 10px 25px rgba(0,0,0,0.05)', border: '1px solid var(--border)' }}>
+      <div className="track-card">
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, paddingBottom: 16, borderBottom: '1px dashed var(--border)' }}>
           <div>
@@ -181,15 +165,7 @@ export default function TrackOrderPage({ params }) {
               </div>
             </div>
           ) : (
-            <div style={{
-              background: 'linear-gradient(135deg, rgba(244,167,36,0.1), rgba(244,167,36,0.05))',
-              border: '1.5px solid rgba(244,167,36,0.3)',
-              borderRadius: 16,
-              padding: '20px 24px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 16,
-            }}>
+            <div className="track-status-banner">
               <div style={{
                 width: 48, height: 48, borderRadius: '50%',
                 background: 'var(--brand-accent)', color: '#fff',
@@ -289,38 +265,21 @@ export default function TrackOrderPage({ params }) {
       </div>
 
       {/* Track Another Order Section */}
-      <div style={{ marginTop: 32, padding: 24, background: '#fff', borderRadius: 20, boxShadow: '0 4px 15px rgba(0,0,0,0.03)', border: '1px solid var(--border)' }}>
+      <div className="track-card track-another-card">
         <h3 style={{ fontSize: 16, fontWeight: 800, marginBottom: 8, color: 'var(--text-primary)' }}>Track Another Order</h3>
         <p style={{ fontSize: 13, color: '#64748b', marginBottom: 16 }}>Enter a different Order ID to check its status or download invoice.</p>
         
-        <div style={{ display: 'flex', gap: 10 }}>
+        <div className="track-search-container">
           <input 
             type="text" 
             placeholder="e.g. 8b2f1a3c"
             value={searchOrderId}
             onChange={(e) => setSearchOrderId(e.target.value)}
-            style={{ 
-              flex: 1, 
-              padding: '12px 16px', 
-              borderRadius: 12, 
-              border: '1px solid #e2e8f0', 
-              fontSize: 14, 
-              outline: 'none',
-              background: '#f8fafc'
-            }}
+            className="track-search-input"
           />
           <button 
             onClick={() => searchOrderId.trim() && router.push(`/track/${searchOrderId.trim().toLowerCase()}`)}
-            style={{ 
-              padding: '0 24px', 
-              background: 'var(--brand-primary)', 
-              color: '#fff', 
-              border: 'none', 
-              borderRadius: 12, 
-              fontSize: 14, 
-              fontWeight: 800, 
-              cursor: 'pointer' 
-            }}
+            className="track-search-btn"
           >
             Track
           </button>

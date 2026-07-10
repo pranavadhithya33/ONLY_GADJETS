@@ -18,4 +18,5 @@ INSERT INTO video_reviews (url, customer_name, active) VALUES
 ('/videos/WhatsApp Video 2026-06-06 at 9.37.34 PM.mp4', 'Customer 7', true),
 ('/videos/WhatsApp Video 2026-06-06 at 9.37.35 PM.mp4', 'Customer 8', true),
 ('/videos/WhatsApp Video 2026-06-06 at 9.38.33 PM.mp4', 'Customer 9', true),
-('/videos/WhatsApp Video 2026-06-06 at 9.39.34 PM.mp4', 'Customer 10', true);
+('/videos/WhatsApp Video 2026-06-06 at 9.39.34 PM.mp4', 'Customer 10', true),
+('/videos/WhatsApp Video 2026-07-01 at 12.23.23 PM.mp4', 'Customer 11', true);

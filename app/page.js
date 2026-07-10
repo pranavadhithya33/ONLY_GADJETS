@@ -6,7 +6,30 @@ import Link from 'next/link';
 import ProductCard, { SkeletonCard } from '@/components/ProductCard';
 import VideoReviewCarousel from '@/components/VideoReviewCarousel';
 import ReviewsSection from '@/components/ReviewsSection';
-import { Smartphone, Tag, Star, TrendingUp, ChevronRight, Zap, Truck } from 'lucide-react';
+import RollingReviews from '@/components/RollingReviews';
+import { Smartphone, Tag, Star, TrendingUp, ChevronRight, Zap, Truck, Filter, X, Check } from 'lucide-react';
+// Helper to normalize brand names
+const formatBrand = (rawBrand) => {
+  if (!rawBrand) return 'Other';
+  const lower = rawBrand.toLowerCase();
+  const overrides = {
+    'iqoo': 'iQOO',
+    'oneplus': 'OnePlus',
+    'realme': 'Realme',
+    'poco': 'POCO',
+    'cmf': 'CMF',
+    'redmi': 'Redmi',
+    'vivo': 'Vivo',
+    'oppo': 'OPPO',
+    'motorola': 'Motorola',
+    'apple': 'Apple',
+    'samsung': 'Samsung',
+    'nothing': 'Nothing',
+    'infinix': 'Infinix',
+    'google': 'Google'
+  };
+  return overrides[lower] || (rawBrand.charAt(0).toUpperCase() + lower.slice(1));
+};
 
 function HomeContent() {
   const searchParams = useSearchParams();
@@ -17,6 +40,81 @@ function HomeContent() {
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('');
+  const [sortBy, setSortBy] = useState('featured');
+  const [selectedBrands, setSelectedBrands] = useState([]);
+  const [priceRange, setPriceRange] = useState('');
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    const handleSearch = (e) => {
+      setSearchQuery(e.detail || '');
+      if (e.detail) {
+        document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' });
+      }
+    };
+    window.addEventListener('global-search', handleSearch);
+    return () => window.removeEventListener('global-search', handleSearch);
+  }, []);
+
+  // Derive available brands
+  const availableBrands = [...new Set(products.map(p => {
+    let rawBrand = p.brand;
+    if (!rawBrand) {
+      const nameParts = p.name?.split(' ') || [];
+      if (nameParts.length > 0) rawBrand = nameParts[0];
+    }
+    return formatBrand(rawBrand);
+  }))].filter(b => b !== 'Other').sort();
+
+  const toggleBrand = (brand) => {
+    setSelectedBrands(prev => 
+      prev.includes(brand) ? prev.filter(b => b !== brand) : [...prev, brand]
+    );
+  };
+
+  // Client-side sorting and filtering logic
+  const filteredProducts = products.filter(p => p.stock > 0).filter(p => {
+    if (searchQuery) {
+      const searchLower = searchQuery.toLowerCase();
+      const matchName = (p.name || '').toLowerCase().includes(searchLower);
+      const matchBrand = (p.brand || '').toLowerCase().includes(searchLower);
+      if (!matchName && !matchBrand) return false;
+    }
+
+    if (selectedBrands.length > 0) {
+      let rawBrand = p.brand;
+      if (!rawBrand) {
+        const nameParts = p.name?.split(' ') || [];
+        if (nameParts.length > 0) rawBrand = nameParts[0];
+      }
+      const pBrand = formatBrand(rawBrand);
+      if (!selectedBrands.includes(pBrand)) return false;
+    }
+    
+    if (priceRange === 'under-15k') return p.our_price < 15000;
+    if (priceRange === '15k-30k') return p.our_price >= 15000 && p.our_price <= 30000;
+    if (priceRange === '30k-50k') return p.our_price > 30000 && p.our_price <= 50000;
+    if (priceRange === 'above-50k') return p.our_price > 50000;
+    
+    return true;
+  });
+
+  const displayedProducts = [...filteredProducts].sort((a, b) => {
+    if (sortBy === 'price-asc') {
+      return a.our_price - b.our_price;
+    }
+    if (sortBy === 'price-desc') {
+      return b.our_price - a.our_price;
+    }
+    if (sortBy === 'newest') {
+      return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+    }
+    // Default 'featured': featured first
+    if (a.featured && !b.featured) return -1;
+    if (!a.featured && b.featured) return 1;
+    return 0;
+  });
 
   // Sync state with URL params
   useEffect(() => {
@@ -32,7 +130,9 @@ function HomeContent() {
     Promise.all([fetchProducts, fetchCategories, fetchVideos])
       .then(([prodData, catData, vidData]) => {
         setProducts(prodData || []);
-        setCategories(catData || []);
+        const excludedSlugs = ['smartphones', 'tablets', 'tablet', 'accessories'];
+        const filteredCats = (catData || []).filter(c => !excludedSlugs.includes(c.slug.toLowerCase()));
+        setCategories(filteredCats);
         setVideos(vidData || []);
         setLoading(false);
       })
@@ -41,10 +141,6 @@ function HomeContent() {
 
   return (
     <div style={{ paddingBottom: 80 }}>
-      {/* Version Indicator for Debugging */}
-      <div style={{ background: '#f4a724', color: '#0a1628', fontSize: '10px', textAlign: 'center', padding: '2px', fontWeight: 'bold' }}>
-        BUILD_VER: 2026-04-26-1700
-      </div>
       {/* Hero Banner */}
       <div style={{
         background: 'linear-gradient(135deg, #0a1628 0%, #1a3a6e 60%, #0a1628 100%)',
@@ -117,6 +213,9 @@ function HomeContent() {
         ))}
       </div>
 
+      {/* Rolling Reviews Segment */}
+      <RollingReviews />
+
       {/* Top Selling Section */}
       {!loading && products.some(p => p.featured && p.stock > 0) && (
         <div style={{ padding: '0 16px', marginTop: 20 }}>
@@ -137,18 +236,6 @@ function HomeContent() {
       {categories.length > 0 && (
         <div style={{ padding:'16px 16px 8px' }}>
           <div style={{ display:'flex', gap:8, overflowX:'auto', scrollbarWidth:'none', paddingBottom:4 }}>
-            <button
-              onClick={() => setActiveCategory('')}
-              style={{
-                padding:'7px 16px', borderRadius:99, fontSize:13, fontWeight:600,
-                border:'none', cursor:'pointer', flexShrink:0, transition:'all 0.2s',
-                background: !activeCategory ? '#0a1628' : '#fff',
-                color: !activeCategory ? '#fff' : '#4a5568',
-                boxShadow: !activeCategory ? 'none' : '0 1px 3px rgba(0,0,0,0.1)',
-              }}
-            >
-              All
-            </button>
             {categories.map(cat => (
               <button
                 key={cat.id}
@@ -171,19 +258,142 @@ function HomeContent() {
 
       {/* Products Grid */}
       <div id="products" style={{ padding:'12px 12px 0' }}>
-        <div className="section-header" style={{ padding:'0 4px', marginBottom:12 }}>
-          <h2 className="section-title">
+        <div className="section-header" style={{ padding:'0 4px', marginBottom:12, display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:8 }}>
+          <h2 className="section-title" style={{ margin:0 }}>
             {activeCategory
               ? categories.find(c => c.slug === activeCategory)?.name || 'Products'
               : <>All <span>Products</span></>
             }
           </h2>
           {!loading && (
-            <span style={{ fontSize:12, color:'var(--text-muted)', fontWeight:600 }}>
-              {products.length} item{products.length !== 1 ? 's' : ''}
-            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize:12, color:'var(--text-muted)', fontWeight:600, display:'inline-block' }}>
+                {displayedProducts.length} item{displayedProducts.length !== 1 ? 's' : ''}
+              </span>
+              <button 
+                onClick={() => setIsFilterOpen(!isFilterOpen)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '6px',
+                  padding: '6px 12px', borderRadius: '8px',
+                  background: isFilterOpen || selectedBrands.length > 0 || priceRange ? '#0a1628' : '#fff',
+                  color: isFilterOpen || selectedBrands.length > 0 || priceRange ? '#fff' : '#4a5568',
+                  border: isFilterOpen || selectedBrands.length > 0 || priceRange ? '1px solid #0a1628' : '1px solid #e2e8f0',
+                  fontSize: '13px', fontWeight: '600', cursor: 'pointer',
+                  transition: 'all 0.2s', boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+                }}
+              >
+                {isFilterOpen ? <X size={14} /> : <Filter size={14} />}
+                <span>Filters {(selectedBrands.length > 0 || priceRange) && `(${(selectedBrands.length > 0 ? 1 : 0) + (priceRange ? 1 : 0)})`}</span>
+              </button>
+            </div>
           )}
         </div>
+
+        {/* Expandable Filter Section */}
+        {isFilterOpen && !loading && (
+          <div style={{
+            background: '#fff', borderRadius: '12px', padding: '16px', marginBottom: '16px',
+            border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
+            transition: 'all 0.3s ease-in-out'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h3 style={{ fontSize: '15px', fontWeight: '700', color: '#0a1628', margin: 0 }}>Advanced Filters</h3>
+              {(selectedBrands.length > 0 || priceRange || sortBy !== 'featured') && (
+                <button 
+                  onClick={() => { setSelectedBrands([]); setPriceRange(''); setSortBy('featured'); }}
+                  style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: '12px', fontWeight: '600', cursor: 'pointer', padding: 0 }}
+                >
+                  Clear All
+                </button>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              {/* Sort By */}
+              <div>
+                <div style={{ fontSize: '12px', fontWeight: '600', color: '#64748b', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Sort By</div>
+                <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: '4px' }}>
+                  {[
+                    { id: 'featured', label: 'Featured' },
+                    { id: 'newest', label: 'Newest' },
+                    { id: 'price-asc', label: 'Price: Low to High' },
+                    { id: 'price-desc', label: 'Price: High to Low' },
+                  ].map(sortOpt => (
+                    <button
+                      key={sortOpt.id}
+                      onClick={() => setSortBy(sortOpt.id)}
+                      style={{
+                        padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: '600',
+                        border: sortBy === sortOpt.id ? '1px solid #0a1628' : '1px solid #e2e8f0',
+                        background: sortBy === sortOpt.id ? '#f8fafc' : '#fff',
+                        color: sortBy === sortOpt.id ? '#0a1628' : '#475569',
+                        cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0,
+                        transition: 'all 0.1s'
+                      }}
+                    >
+                      {sortOpt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Price Range */}
+              <div>
+                <div style={{ fontSize: '12px', fontWeight: '600', color: '#64748b', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Price Range</div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '8px' }}>
+                  {[
+                    { id: '', label: 'Any Price' },
+                    { id: 'under-15k', label: 'Under ₹15,000' },
+                    { id: '15k-30k', label: '₹15k - ₹30k' },
+                    { id: '30k-50k', label: '₹30k - ₹50k' },
+                    { id: 'above-50k', label: 'Above ₹50k' },
+                  ].map(priceOpt => (
+                    <button
+                      key={priceOpt.id}
+                      onClick={() => setPriceRange(priceOpt.id)}
+                      style={{
+                        padding: '8px 12px', borderRadius: '8px', fontSize: '12px', fontWeight: '600',
+                        border: priceRange === priceOpt.id ? '1px solid #0ea5e9' : '1px solid #e2e8f0',
+                        background: priceRange === priceOpt.id ? '#f0f9ff' : '#fff',
+                        color: priceRange === priceOpt.id ? '#0369a1' : '#475569',
+                        cursor: 'pointer', textAlign: 'center',
+                        transition: 'all 0.1s'
+                      }}
+                    >
+                      {priceOpt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Brands */}
+              {availableBrands.length > 0 && (
+                <div>
+                  <div style={{ fontSize: '12px', fontWeight: '600', color: '#64748b', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Brands</div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                    {availableBrands.map(brand => (
+                      <button
+                        key={brand}
+                        onClick={() => toggleBrand(brand)}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: '4px',
+                          padding: '6px 12px', borderRadius: '99px', fontSize: '13px', fontWeight: '600',
+                          border: selectedBrands.includes(brand) ? '1px solid transparent' : '1px solid #e2e8f0',
+                          background: selectedBrands.includes(brand) ? '#0a1628' : '#fff',
+                          color: selectedBrands.includes(brand) ? '#fff' : '#475569',
+                          cursor: 'pointer', transition: 'all 0.2s'
+                        }}
+                      >
+                        {selectedBrands.includes(brand) && <Check size={14} color="#fff" />}
+                        {brand}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {loading ? (
           <div className="product-grid">
@@ -210,10 +420,7 @@ function HomeContent() {
           </div>
         ) : (
           <div className="product-grid">
-            {products
-              .filter(p => p.stock > 0)
-              .map(p => <ProductCard key={p.id} product={p} />)
-            }
+            {displayedProducts.map(p => <ProductCard key={p.id} product={p} />)}
           </div>
         )}
       </div>

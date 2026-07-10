@@ -9,8 +9,8 @@ export async function PUT(req, { params }) {
     const { id } = await params;
     const body = await req.json();
     
-    // Check if this is a fallback video ID (1 through 10)
-    if (['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'].includes(id)) {
+    // Check if this is a fallback video ID (1 through 11)
+    if (['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11'].includes(id)) {
       throw new Error('This is a fallback video. Please run the SQL INSERT script in your Supabase dashboard before editing videos.');
     }
     

@@ -16,6 +16,14 @@ export async function POST(request) {
       ? await scrapeFlipkartProduct(url, category)
       : await scrapeAmazonProduct(url, category);
 
+    // If scraper failed to get details (e.g. returns empty images or failure message)
+    if (!scrapedData || !scrapedData.images || scrapedData.images.length === 0 || (scrapedData.description && scrapedData.description.includes('Could not fetch full product details'))) {
+      const errorMsg = scrapedData?.description?.includes('Could not fetch full product details')
+        ? scrapedData.description
+        : 'Could not fetch product details from the URL. Please verify the link or add the product manually.';
+      return NextResponse.json({ error: errorMsg }, { status: 400 });
+    }
+
     // Save to Supabase — deduplicate slug if needed
     const supabase = createAdminClient();
     const { data: existing } = await supabase

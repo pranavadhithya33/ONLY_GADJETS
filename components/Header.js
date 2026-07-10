@@ -63,12 +63,19 @@ export default function Header() {
   useEffect(() => {
     fetch('/api/categories')
       .then(r => r.json())
-      .then(data => setCategories(data || []))
+      .then(data => {
+        const excludedSlugs = ['smartphones', 'tablets', 'tablet', 'accessories'];
+        const filteredCats = (data || []).filter(c => !excludedSlugs.includes(c.slug.toLowerCase()));
+        setCategories(filteredCats);
+      })
       .catch(() => {});
   }, []);
 
   const handleSearch = (val) => {
     setQuery(val);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('global-search', { detail: val }));
+    }
     if (debounceRef.current) clearTimeout(debounceRef.current);
     if (!val.trim()) {
       setResults([]);
@@ -195,9 +202,6 @@ export default function Header() {
         <div style={{ width: '1px', height: '20px', background: 'rgba(255,255,255,0.1)', flexShrink: 0 }} />
 
         {/* Dynamic Categories */}
-        <Link href="/" className={`${styles.categoryPill} ${!pathname?.includes('cat=') ? styles.categoryPillActive : ''}`} style={{ margin: 0 }}>
-          All
-        </Link>
         {categories.map(cat => (
           <Link
             key={cat.id || cat.slug}

@@ -12,7 +12,8 @@ const FALLBACK_VIDEOS = [
   { id: '7', url: '/videos/WhatsApp Video 2026-06-06 at 9.37.34 PM.mp4', customer_name: 'Verified Customer', active: true },
   { id: '8', url: '/videos/WhatsApp Video 2026-06-06 at 9.37.35 PM.mp4', customer_name: 'Verified Customer', active: true },
   { id: '9', url: '/videos/WhatsApp Video 2026-06-06 at 9.38.33 PM.mp4', customer_name: 'Verified Customer', active: true },
-  { id: '10', url: '/videos/WhatsApp Video 2026-06-06 at 9.39.34 PM.mp4', customer_name: 'Verified Customer', active: true }
+  { id: '10', url: '/videos/WhatsApp Video 2026-06-06 at 9.39.34 PM.mp4', customer_name: 'Verified Customer', active: true },
+  { id: '11', url: '/videos/WhatsApp Video 2026-07-01 at 12.23.23 PM.mp4', customer_name: 'Verified Customer', active: true }
 ];
 
 export async function GET(req) {

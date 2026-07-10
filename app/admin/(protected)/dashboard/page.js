@@ -6,9 +6,10 @@ import styles from '@/styles/Admin.module.css';
 import { formatINR, calcPaymentDetails } from '@/lib/utils';
 import {
   Smartphone, Package, ShoppingBag, Plus, Edit2, Trash2,
-  LogOut, RefreshCw, Star, MessageSquare, Check, X, User, Phone, MapPin
+  LogOut, RefreshCw, Star, MessageSquare, Check, X, User, Phone, MapPin, Search
 } from 'lucide-react';
 import { generateInvoice } from '@/lib/invoiceGenerator';
+import * as XLSX from 'xlsx';
 
 const CATEGORIES = [
   { label: 'Smartphones', value: 'smartphones' },
@@ -50,6 +51,18 @@ export default function AdminDashboard() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('products');
   const [products, setProducts] = useState([]);
+  const [productSearch, setProductSearch] = useState('');
+  const [productSearchQuery, setProductSearchQuery] = useState('');
+  
+  const filteredProducts = products.filter(p => {
+    if (!productSearchQuery) return true;
+    const query = productSearchQuery.toLowerCase().trim();
+    return (
+      p.name?.toLowerCase().includes(query) ||
+      p.category?.toLowerCase().includes(query)
+    );
+  });
+
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -58,6 +71,12 @@ export default function AdminDashboard() {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
   const [uploadingImage, setUploadingImage] = useState(false);
+  
+  // Bulk Importer state
+  const [showBulkModal, setShowBulkModal] = useState(false);
+  const [bulkPreviewData, setBulkPreviewData] = useState([]);
+  const [bulkImporting, setBulkImporting] = useState(false);
+  const [bulkImportMsg, setBulkImportMsg] = useState('');
   
   // Importer state
   const [importUrl, setImportUrl] = useState('');
@@ -139,6 +158,206 @@ export default function AdminDashboard() {
     // setLoading(true); // Avoid calling setState synchronously in effect body
     Promise.all([fetchProducts(), fetchOrders(), fetchReviewsAdmin(), fetchVideosAdmin()]).finally(() => setLoading(false));
   }, []);
+
+  // Bulk Import Handlers
+  const downloadTemplate = () => {
+    const headers = [
+      "Name",
+      "Category",
+      "Our Price (INR)",
+      "Online Price (INR)",
+      "Amazon Price (INR)",
+      "Flipkart Price (INR)",
+      "Amazon URL",
+      "Flipkart URL",
+      "Description",
+      "Images (Comma-separated URLs)",
+      "Featured (TRUE/FALSE)",
+      "Prepaid Discount %",
+      "Variants (RAM/Storage:Price, ...)"
+    ];
+    
+    const sampleRows = [
+      [
+        "Samsung Galaxy S24 Ultra (12GB/256GB)",
+        "smartphones",
+        "114999",
+        "129999",
+        "124999",
+        "123999",
+        "https://www.amazon.in/dp/B0CSZHDCD9",
+        "",
+        "Galaxy S24 Ultra with Snapdragon 8 Gen 3, AI features, 200MP camera.",
+        "https://m.media-amazon.com/images/I/71RMRX1XSBL._SX679_.jpg",
+        "TRUE",
+        "3",
+        "12/256:114999, 12/512:124999, 12/1024:139999"
+      ],
+      [
+        "OnePlus 12R 5G (8GB/128GB)",
+        "smartphones",
+        "35999",
+        "39999",
+        "39999",
+        "39500",
+        "https://www.amazon.in/dp/B0CR8GFFC6",
+        "",
+        "OnePlus 12R with Snapdragon 8 Gen 2, 50MP Camera, 5500mAh.",
+        "https://m.media-amazon.com/images/I/61dVNfNz7qL._SX679_.jpg",
+        "FALSE",
+        "3",
+        "8/128:35999, 12/256:40999"
+      ]
+    ];
+
+    const worksheetData = [headers, ...sampleRows];
+    const ws = XLSX.utils.aoa_to_sheet(worksheetData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Template");
+    XLSX.writeFile(wb, "bulk_product_import_template.xlsx");
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const data = new Uint8Array(event.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+        if (rows.length === 0) {
+          alert('Excel file is empty');
+          return;
+        }
+
+        const headers = rows[0].map(h => String(h || '').trim().toLowerCase());
+        const dataRows = rows.slice(1);
+
+        const getColIndex = (aliases) => {
+          return headers.findIndex(h => aliases.includes(h));
+        };
+
+        const colIndices = {
+          name: getColIndex(['name', 'product name', 'title']),
+          category: getColIndex(['category']),
+          our_price: getColIndex(['our price (inr)', 'our price', 'our_price', 'price']),
+          online_price: getColIndex(['online price (inr)', 'online price', 'online_price', 'market price']),
+          amazon_price: getColIndex(['amazon price (inr)', 'amazon price', 'amazon_price']),
+          flipkart_price: getColIndex(['flipkart price (inr)', 'flipkart price', 'flipkart_price']),
+          amazon_url: getColIndex(['amazon url', 'amazon_url']),
+          flipkart_url: getColIndex(['flipkart url', 'flipkart_url']),
+          description: getColIndex(['description', 'specs']),
+          images: getColIndex(['images (comma-separated urls)', 'images', 'image urls', 'image']),
+          featured: getColIndex(['featured (true/false)', 'featured']),
+          prepaid_discount_pct: getColIndex(['prepaid discount %', 'prepaid discount', 'prepaid_discount_pct']),
+          variants: getColIndex(['variants (ram/storage:price, ...)', 'variants'])
+        };
+
+        const parsed = [];
+        dataRows.forEach((row) => {
+          if (row.length === 0 || row.every(val => val === null || val === '')) return;
+
+          const getValue = (colIndex, defaultValue = '') => {
+            if (colIndex === -1 || colIndex >= row.length) return defaultValue;
+            const val = row[colIndex];
+            return val !== undefined && val !== null ? String(val).trim() : defaultValue;
+          };
+
+          const name = getValue(colIndices.name);
+          const category = getValue(colIndices.category, 'smartphones');
+          const our_price = Number(getValue(colIndices.our_price)) || 0;
+          const online_price = Number(getValue(colIndices.online_price)) || 0;
+          const amazon_price = Number(getValue(colIndices.amazon_price)) || 0;
+          const flipkart_price = Number(getValue(colIndices.flipkart_price)) || 0;
+          const amazon_url = getValue(colIndices.amazon_url);
+          const flipkart_url = getValue(colIndices.flipkart_url);
+          const description = getValue(colIndices.description);
+          const images = getValue(colIndices.images);
+          const featuredVal = getValue(colIndices.featured);
+          const featured = featuredVal.toLowerCase() === 'true' || featuredVal === '1';
+          const prepaid_discount_pct = Number(getValue(colIndices.prepaid_discount_pct)) || 3;
+          const variants = getValue(colIndices.variants);
+
+          const validationErrors = [];
+          if (!name) validationErrors.push('Missing name');
+          if (!our_price || our_price <= 0) validationErrors.push('Invalid price');
+          if (!category) validationErrors.push('Missing category');
+
+          parsed.push({
+            name,
+            category,
+            our_price,
+            online_price,
+            amazon_price,
+            flipkart_price,
+            amazon_url,
+            flipkart_url,
+            description,
+            images,
+            featured,
+            prepaid_discount_pct,
+            variants,
+            errors: validationErrors
+          });
+        });
+
+        setBulkPreviewData(parsed);
+      } catch (err) {
+        alert('Failed to parse Excel file: ' + err.message);
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  };
+
+  const handleBulkImportSubmit = async () => {
+    if (bulkPreviewData.length === 0) return;
+    
+    const hasErrors = bulkPreviewData.some(p => p.errors.length > 0);
+    if (hasErrors) {
+      if (!confirm('Some products have validation errors (marked in red). Do you want to proceed anyway?')) {
+        return;
+      }
+    }
+
+    setBulkImporting(true);
+    setBulkImportMsg('⏳ Importing products to database... please wait.');
+    
+    try {
+      const res = await fetch('/api/products/bulk', {
+        method: 'POST',
+        headers: getAdminHeaders(),
+        body: JSON.stringify({ products: bulkPreviewData })
+      });
+      const data = await res.json();
+      
+      if (!res.ok) throw new Error(data.error || 'Import failed');
+      
+      let msg = `✅ Import Complete! Successfully inserted: ${data.successCount} products.`;
+      if (data.failedCount > 0) {
+        msg += ` Failed: ${data.failedCount}. Check browser console for errors.`;
+        console.error('Bulk import errors:', data.errors);
+      }
+      setBulkImportMsg(msg);
+      await fetchProducts();
+      
+      if (data.failedCount === 0) {
+        setTimeout(() => {
+          setBulkPreviewData([]);
+          setShowBulkModal(false);
+          setBulkImportMsg('');
+        }, 4000);
+      }
+    } catch (err) {
+      setBulkImportMsg(`❌ Import Error: ${err.message}`);
+    } finally {
+      setBulkImporting(false);
+    }
+  };
 
   const handleLogout = () => {
     sessionStorage.removeItem('og_admin');
@@ -631,12 +850,51 @@ export default function AdminDashboard() {
                   value={form.description} onChange={e => handleFormChange('description', e.target.value)} />
               </div>
 
+              {/* Prepaid Discount */}
+              <div className="form-group">
+                <label className="form-label">Prepaid Discount %</label>
+                <input type="number" className="form-input" min="0" max="20" placeholder="3"
+                  value={form.prepaid_discount_pct} onChange={e => handleFormChange('prepaid_discount_pct', e.target.value)} />
+              </div>
+
               {/* Images */}
               <div className="form-group">
-                <label className="form-label">Images (URL per line)</label>
-                <textarea className="form-input" rows={3} placeholder="Image URLs..."
-                  value={form.images.join('\n')}
-                  onChange={e => handleFormChange('images', e.target.value.split('\n'))} />
+                <label className="form-label">Product Images</label>
+                <div className={styles.imageUrlList}>
+                  {form.images.map((img, idx) => (
+                    <div key={idx} className={styles.imageUrlRow} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      {img ? (
+                        <div style={{ position: 'relative', width: 60, height: 60, borderRadius: 8, overflow: 'hidden', border: '1px solid #ddd' }}>
+                          <img src={img} alt="Product" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </div>
+                      ) : (
+                        <div style={{ width: 60, height: 60, borderRadius: 8, background: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <span style={{ fontSize: 10, color: '#999' }}>No Img</span>
+                        </div>
+                      )}
+                      
+                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                        <input type="file" accept="image/*" disabled={uploadingImage}
+                          onChange={e => handleFileUpload(idx, e.target.files[0])}
+                          style={{ fontSize: 13 }} />
+                        <input 
+                          type="text" 
+                          className="form-input" 
+                          style={{ padding: '4px 8px', fontSize: 12 }} 
+                          placeholder="Or paste image URL..."
+                          value={img} 
+                          onChange={e => handleImageChange(idx, e.target.value)} 
+                        />
+                      </div>
+
+                      <button type="button" className={styles.removeImgBtn} disabled={uploadingImage}
+                        onClick={() => removeImageField(idx)} aria-label="Remove image">×</button>
+                    </div>
+                  ))}
+                  <button type="button" className={styles.addImgBtn} onClick={addImageField} disabled={uploadingImage}>
+                    {uploadingImage ? 'Uploading...' : '+ Add Another Image'}
+                  </button>
+                </div>
               </div>
 
               {/* Stock and Featured */}
@@ -921,9 +1179,22 @@ export default function AdminDashboard() {
           <div>
             <div className={styles.sectionHeader}>
               <h2 className={styles.sectionTitle}>Products</h2>
-              <button onClick={openAdd} className={styles.addBtn} id="add-product-btn">
-                <Plus size={16} /> Add Product
-              </button>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button 
+                  onClick={() => {
+                    setBulkPreviewData([]);
+                    setBulkImportMsg('');
+                    setShowBulkModal(true);
+                  }} 
+                  className="btn btn-outline" 
+                  style={{ display: 'flex', alignItems: 'center', gap: '6px', border: '1px solid var(--border)', padding: '10px 16px', borderRadius: '8px', fontWeight: '600', cursor: 'pointer' }}
+                >
+                  📥 Bulk Import (Excel)
+                </button>
+                <button onClick={openAdd} className={styles.addBtn} id="add-product-btn">
+                  <Plus size={16} /> Add Product
+                </button>
+              </div>
             </div>
 
             {/* Amazon Quick Importer */}
@@ -985,12 +1256,61 @@ export default function AdminDashboard() {
               {importing ? 'Syncing Catalog...' : 'Manual Bulk Refresh (10-Day Sync)'}
             </button>
 
+            {/* Product Search Bar */}
+            <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', alignItems: 'center' }}>
+              <div style={{ position: 'relative', flex: 1 }}>
+                <Search size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                <input 
+                  type="text" 
+                  className="form-input" 
+                  style={{ paddingLeft: '38px', width: '100%' }} 
+                  placeholder="Search products by name or category..."
+                  value={productSearch}
+                  onChange={(e) => {
+                    setProductSearch(e.target.value);
+                    if (e.target.value === '') {
+                      setProductSearchQuery('');
+                    }
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      setProductSearchQuery(productSearch);
+                    }
+                  }}
+                />
+              </div>
+              <button 
+                onClick={() => setProductSearchQuery(productSearch)}
+                className="btn btn-primary"
+                style={{ padding: '12px 24px', display: 'flex', alignItems: 'center', gap: '6px' }}
+              >
+                <Search size={16} /> Search
+              </button>
+              {productSearchQuery && (
+                <button 
+                  onClick={() => {
+                    setProductSearch('');
+                    setProductSearchQuery('');
+                  }}
+                  className="btn btn-outline"
+                  style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', border: '1px solid var(--border)' }}
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+
             {loading ? (
               <div style={{ textAlign:'center', padding:32, color:'var(--text-muted)' }}>Loading…</div>
             ) : products.length === 0 ? (
               <div className={styles.emptyState}>
                 <div style={{ fontSize:40, marginBottom:12 }}>📱</div>
                 <p>No products yet. Click &quot;Add Product&quot; to get started.</p>
+              </div>
+            ) : filteredProducts.length === 0 ? (
+              <div className={styles.emptyState}>
+                <div style={{ fontSize:40, marginBottom:12 }}>🔍</div>
+                <p>No products found matching &quot;{productSearchQuery}&quot;.</p>
               </div>
             ) : (
               <div className={styles.tableWrap}>
@@ -1006,7 +1326,7 @@ export default function AdminDashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {products.map(p => (
+                    {filteredProducts.map(p => (
                       <tr key={p.id}>
                         <td data-label="Image">
                           {p.images?.[0] ? (
@@ -1350,274 +1670,6 @@ export default function AdminDashboard() {
 
       </div>
 
-      {/* Add/Edit Modal */}
-      {showModal && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modal}>
-            <h2 className={styles.modalTitle}>
-              {editProduct ? <><Edit2 size={18} /> Edit Product</> : <><Plus size={18} /> Add Product</>}
-            </h2>
-
-            <div className={styles.modalForm}>
-              {/* Name */}
-              <div className="form-group">
-                <label className="form-label">Product Name *</label>
-                <input type="text" className="form-input" placeholder="e.g. Samsung Galaxy A55 5G"
-                  value={form.name} onChange={e => handleFormChange('name', e.target.value)} />
-              </div>
-
-              {/* Category */}
-              <div className="form-group">
-                <label className="form-label">Category</label>
-                <select className="form-input" value={form.category} onChange={e => handleFormChange('category', e.target.value)}>
-                  {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
-                </select>
-              </div>
-
-              {/* Prices */}
-              <div className={styles.formGrid}>
-                <div className="form-group">
-                  <label className="form-label">Our Price (₹) *</label>
-                  <input type="number" className="form-input" placeholder="e.g. 21999"
-                    value={form.our_price} onChange={e => handleFormChange('our_price', e.target.value)} />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Online Price (General)</label>
-                  <input type="number" className="form-input" placeholder="e.g. 26999"
-                    value={form.online_price} onChange={e => handleFormChange('online_price', e.target.value)} />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Amazon Price (Fallback)</label>
-                  <input type="number" className="form-input" placeholder="e.g. 25999"
-                    value={form.amazon_price} onChange={e => handleFormChange('amazon_price', e.target.value)} />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Flipkart Price (Fallback)</label>
-                  <input type="number" className="form-input" placeholder="e.g. 24999"
-                    value={form.flipkart_price} onChange={e => handleFormChange('flipkart_price', e.target.value)} />
-                </div>
-              </div>
-
-              {/* Scraper URLs */}
-              <div className={styles.formGrid}>
-                <div className="form-group" style={{ position: 'relative' }}>
-                  <label className="form-label">Amazon URL (For live scraping)</label>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <input type="url" className="form-input" placeholder="https://amazon.in/dp/..."
-                      value={form.amazon_url} onChange={e => handleFormChange('amazon_url', e.target.value)} />
-                    <button type="button" className="btn btn-secondary" style={{ padding: '8px 12px', fontSize: 12 }} 
-                      onClick={async () => {
-                        if (!form.amazon_url) return alert('Enter URL first');
-                        setImporting(true);
-                        try {
-                          const res = await fetch('/api/import', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ url: form.amazon_url, category: form.category })
-                          });
-                          const data = await res.json();
-                          if (!res.ok) throw new Error(data.error);
-                          // Update form with fetched data
-                          setForm(prev => ({
-                            ...prev,
-                            name: data.product.name,
-                            amazon_price: data.product.amazon_price,
-                            online_price: data.product.amazon_price,
-                            our_price: data.product.our_price,
-                            description: data.product.description,
-                            images: data.product.images?.length ? data.product.images : prev.images,
-                            stock: data.product.stock
-                          }));
-                          alert('Data fetched successfully!');
-                        } catch (err) { alert('Fetch failed: ' + err.message); }
-                        finally { setImporting(false); }
-                      }}
-                      disabled={importing}
-                    >
-                      {importing ? '...' : 'Fetch'}
-                    </button>
-                  </div>
-                </div>
-                <div className="form-group" style={{ position: 'relative' }}>
-                  <label className="form-label">Flipkart URL (For live scraping)</label>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <input type="url" className="form-input" placeholder="https://flipkart.com/..."
-                      value={form.flipkart_url} onChange={e => handleFormChange('flipkart_url', e.target.value)} />
-                    <button type="button" className="btn btn-secondary" style={{ padding: '8px 12px', fontSize: 12 }} 
-                      onClick={async () => {
-                        if (!form.flipkart_url) return alert('Enter URL first');
-                        setImporting(true);
-                        try {
-                          const res = await fetch('/api/import', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ url: form.flipkart_url, category: form.category })
-                          });
-                          const data = await res.json();
-                          if (!res.ok) throw new Error(data.error);
-                          // Update form with fetched data
-                          setForm(prev => ({
-                            ...prev,
-                            name: data.product.name,
-                            flipkart_price: data.product.flipkart_price,
-                            online_price: data.product.flipkart_price,
-                            our_price: data.product.our_price,
-                            description: data.product.description,
-                            images: data.product.images?.length ? data.product.images : prev.images,
-                            stock: data.product.stock
-                          }));
-                          alert('Data fetched successfully!');
-                        } catch (err) { alert('Fetch failed: ' + err.message); }
-                        finally { setImporting(false); }
-                      }}
-                      disabled={importing}
-                    >
-                      {importing ? '...' : 'Fetch'}
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Prepaid Discount */}
-              <div className="form-group">
-                <label className="form-label">Prepaid Discount %</label>
-                <input type="number" className="form-input" min="0" max="20" placeholder="3"
-                  value={form.prepaid_discount_pct} onChange={e => handleFormChange('prepaid_discount_pct', e.target.value)} />
-              </div>
-
-
-              {/* Description */}
-              <div className="form-group">
-                <label className="form-label">Description</label>
-                <textarea className={styles.formTextarea} placeholder="Product specs, features, etc."
-                  value={form.description} onChange={e => handleFormChange('description', e.target.value)} />
-              </div>
-
-              {/* Images */}
-              <div className="form-group">
-                <label className="form-label">Product Images</label>
-                <div className={styles.imageUrlList}>
-                  {form.images.map((img, idx) => (
-                    <div key={idx} className={styles.imageUrlRow} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                      {img ? (
-                        <div style={{ position: 'relative', width: 60, height: 60, borderRadius: 8, overflow: 'hidden', border: '1px solid #ddd' }}>
-                          <img src={img} alt="Product" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        </div>
-                      ) : (
-                        <div style={{ width: 60, height: 60, borderRadius: 8, background: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <span style={{ fontSize: 10, color: '#999' }}>No Img</span>
-                        </div>
-                      )}
-                      
-                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
-                        <input type="file" accept="image/*" disabled={uploadingImage}
-                          onChange={e => handleFileUpload(idx, e.target.files[0])}
-                          style={{ fontSize: 13 }} />
-                        {img && <input type="text" className="form-input" style={{ padding: '4px 8px', fontSize: 12 }} readOnly value={img} />}
-                      </div>
-
-                      <button type="button" className={styles.removeImgBtn} disabled={uploadingImage}
-                        onClick={() => removeImageField(idx)} aria-label="Remove image">×</button>
-                    </div>
-                  ))}
-                  <button type="button" className={styles.addImgBtn} onClick={addImageField} disabled={uploadingImage}>
-                    {uploadingImage ? 'Uploading...' : '+ Add Another Image'}
-                  </button>
-                </div>
-              </div>
-
-              {/* Featured */}
-              <label style={{ display:'flex', alignItems:'center', gap:10, cursor:'pointer', fontSize:14, fontWeight:500, color:'var(--text-secondary)' }}>
-                <input type="checkbox" checked={form.featured}
-                  onChange={e => handleFormChange('featured', e.target.checked)}
-                  style={{ width:16, height:16, accentColor:'var(--brand-accent)' }} />
-                Mark as Featured product
-              </label>
-
-              {/* ---- Variants Grid ---- */}
-              <div style={{ background: 'var(--bg-highlight, #f8fafc)', border: '1px solid var(--border)', borderRadius: 12, padding: 16, marginTop: 4 }}>
-                <div style={{ fontWeight: 800, fontSize: 15, color: 'var(--brand-primary)', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
-                  📦 RAM &amp; Storage Variants
-                </div>
-                <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 14 }}>
-                  Set a price for each combination. Toggle the eye icon to show/hide that combo from customers. Leave price empty to skip.
-                </p>
-
-                {/* Column headers */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 110px 44px', gap: 6, marginBottom: 6, padding: '0 4px' }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>RAM</div>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Storage</div>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Price (₹)</div>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Show</div>
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 320, overflowY: 'auto' }}>
-                  {(form.variants || buildEmptyVariants()).map((v, idx) => (
-                    <div
-                      key={`${v.ram}-${v.storage}`}
-                      style={{
-                        display: 'grid',
-                        gridTemplateColumns: '1fr 1fr 110px 44px',
-                        gap: 6,
-                        alignItems: 'center',
-                        padding: '6px 8px',
-                        borderRadius: 8,
-                        background: v.enabled ? 'rgba(244,167,36,0.06)' : '#fff',
-                        border: v.enabled ? '1px solid rgba(244,167,36,0.25)' : '1px solid var(--border)',
-                        opacity: v.price ? 1 : 0.65,
-                        transition: 'all 0.15s',
-                      }}
-                    >
-                      <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>{v.ram} GB</span>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>{v.storage} GB</span>
-                      <input
-                        type="number"
-                        className="form-input"
-                        style={{ padding: '5px 8px', fontSize: 13, height: 34 }}
-                        placeholder="e.g. 21999"
-                        value={v.price}
-                        onChange={e => {
-                          const updated = [...(form.variants || buildEmptyVariants())];
-                          updated[idx] = { ...updated[idx], price: e.target.value };
-                          handleFormChange('variants', updated);
-                        }}
-                      />
-                      <button
-                        type="button"
-                        title={v.enabled ? 'Visible to customers — click to hide' : 'Hidden from customers — click to show'}
-                        onClick={() => {
-                          const updated = [...(form.variants || buildEmptyVariants())];
-                          updated[idx] = { ...updated[idx], enabled: !updated[idx].enabled };
-                          handleFormChange('variants', updated);
-                        }}
-                        style={{
-                          width: 36, height: 34, borderRadius: 8,
-                          border: 'none', cursor: 'pointer',
-                          background: v.enabled ? '#16a34a' : '#e5e7eb',
-                          color: v.enabled ? '#fff' : '#9aa3b2',
-                          fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          transition: 'all 0.15s',
-                        }}
-                      >
-                        {v.enabled ? '👁' : '🚫'}
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {saveError && <div className="notice notice-error">⚠ {saveError}</div>}
-
-              <div className={styles.modalActions}>
-                <button type="button" className={styles.modalCancelBtn} onClick={closeModal}>Cancel</button>
-                <button type="button" className={styles.modalSaveBtn} onClick={handleSave} disabled={saving}>
-                  {saving ? 'Saving…' : editProduct ? '✓ Save Changes' : '+ Add Product'}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Manual Order Modal */}
       {showOrderModal && (
@@ -1816,6 +1868,163 @@ export default function AdminDashboard() {
                 onClick={() => handleSaveRoute(expandedRouteOrderId)}
               >
                 ✓ Save Steps
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Import Modal */}
+      {showBulkModal && (
+        <div className={styles.modalOverlay} style={{ zIndex: 9999 }}>
+          <div className={styles.modal} style={{ maxWidth: '800px', width: '95%' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px' }}>
+              <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--brand-primary)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                📥 Bulk Product Import
+              </h3>
+              <button 
+                onClick={() => {
+                  if (bulkImporting) return;
+                  setShowBulkModal(false);
+                }} 
+                style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: 'var(--text-muted)' }}
+              >
+                ×
+              </button>
+            </div>
+
+            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '16px' }}>
+              Upload an Excel (.xlsx, .xls) or CSV file containing multiple products. You can specify variants using the format: <code>RAM/Storage:Price</code> (e.g. <code>8/128:24999, 12/256:29999</code>).
+            </p>
+
+            <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
+              <button 
+                type="button" 
+                onClick={downloadTemplate} 
+                className="btn btn-outline" 
+                style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', padding: '8px 14px' }}
+              >
+                📊 Download Excel Template
+              </button>
+              <div style={{ position: 'relative', flex: 1, minWidth: '200px' }}>
+                <input 
+                  type="file" 
+                  accept=".xlsx, .xls, .csv" 
+                  onChange={handleFileChange}
+                  style={{ display: 'none' }}
+                  id="bulk-file-input"
+                  disabled={bulkImporting}
+                />
+                <label 
+                  htmlFor="bulk-file-input"
+                  className="btn btn-primary"
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '13px', padding: '8px 14px', cursor: 'pointer', margin: 0 }}
+                >
+                  📁 Select Excel / CSV File
+                </label>
+              </div>
+            </div>
+
+            {bulkPreviewData.length > 0 && (
+              <div style={{ marginBottom: '20px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>
+                    Previewing {bulkPreviewData.length} Products
+                  </h4>
+                  <div style={{ fontSize: '12px', fontWeight: 600 }}>
+                    <span style={{ color: 'var(--success)', marginRight: '10px' }}>
+                      ✓ {bulkPreviewData.filter(p => p.errors.length === 0).length} Valid
+                    </span>
+                    {bulkPreviewData.some(p => p.errors.length > 0) && (
+                      <span style={{ color: 'var(--error)' }}>
+                        ⚠ {bulkPreviewData.filter(p => p.errors.length > 0).length} Errors
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div style={{ maxHeight: '300px', overflowY: 'auto', border: '1px solid var(--border)', borderRadius: '8px', background: '#fff' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px', textAlign: 'left' }}>
+                    <thead>
+                      <tr style={{ background: '#f8fafc', borderBottom: '1px solid var(--border)' }}>
+                        <th style={{ padding: '8px 12px', fontWeight: 700 }}>Name</th>
+                        <th style={{ padding: '8px 12px', fontWeight: 700 }}>Category</th>
+                        <th style={{ padding: '8px 12px', fontWeight: 700 }}>Our Price</th>
+                        <th style={{ padding: '8px 12px', fontWeight: 700 }}>Variants</th>
+                        <th style={{ padding: '8px 12px', fontWeight: 700 }}>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {bulkPreviewData.map((prod, idx) => {
+                        const hasErrors = prod.errors.length > 0;
+                        return (
+                          <tr 
+                            key={idx} 
+                            style={{ 
+                              borderBottom: '1px solid var(--border)', 
+                              background: hasErrors ? 'rgba(239, 68, 68, 0.05)' : 'transparent'
+                            }}
+                          >
+                            <td style={{ padding: '8px 12px', fontWeight: 600, color: hasErrors ? 'var(--error)' : 'var(--text-primary)' }}>
+                              {prod.name || <span style={{ fontStyle: 'italic', color: '#9aa3b2' }}>Empty Name</span>}
+                            </td>
+                            <td style={{ padding: '8px 12px', color: 'var(--text-secondary)' }}>{prod.category}</td>
+                            <td style={{ padding: '8px 12px', fontWeight: 700 }}>{prod.our_price > 0 ? formatINR(prod.our_price) : '—'}</td>
+                            <td style={{ padding: '8px 12px', fontFamily: 'monospace', color: 'var(--brand-primary)' }}>{prod.variants || '—'}</td>
+                            <td style={{ padding: '8px 12px' }}>
+                              {hasErrors ? (
+                                <span style={{ color: 'var(--error)', fontWeight: 600 }} title={prod.errors.join(', ')}>
+                                  ⚠ {prod.errors[0]}
+                                </span>
+                              ) : (
+                                <span style={{ color: 'var(--success)', fontWeight: 600 }}>✓ Ready</span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {bulkImportMsg && (
+              <div style={{ 
+                padding: '12px', 
+                borderRadius: '8px', 
+                background: bulkImportMsg.includes('❌') ? 'var(--error-bg)' : bulkImportMsg.includes('⏳') ? 'var(--info-bg)' : 'var(--success-bg)',
+                color: bulkImportMsg.includes('❌') ? 'var(--error)' : bulkImportMsg.includes('⏳') ? 'var(--info)' : 'var(--success)',
+                fontWeight: 600,
+                fontSize: '13px',
+                marginBottom: '16px'
+              }}>
+                {bulkImportMsg}
+              </div>
+            )}
+
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', borderTop: '1px solid #e2e8f0', paddingTop: '16px', marginTop: '16px' }}>
+              <button 
+                type="button" 
+                className="btn btn-outline" 
+                style={{ padding: '8px 16px', fontSize: '13px' }}
+                onClick={() => {
+                  setBulkPreviewData([]);
+                  setBulkImportMsg('');
+                  setShowBulkModal(false);
+                }}
+                disabled={bulkImporting}
+              >
+                Cancel
+              </button>
+              <button 
+                type="button" 
+                className="btn btn-primary" 
+                style={{ padding: '8px 24px', fontSize: '13px', fontWeight: 700 }}
+                onClick={handleBulkImportSubmit}
+                disabled={bulkImporting || bulkPreviewData.length === 0}
+              >
+                {bulkImporting ? 'Importing...' : `Confirm & Import ${bulkPreviewData.length} Products`}
               </button>
             </div>
           </div>
