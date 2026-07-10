@@ -49,9 +49,6 @@ function HomeContent() {
   useEffect(() => {
     const handleSearch = (e) => {
       setSearchQuery(e.detail || '');
-      if (e.detail) {
-        document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' });
-      }
     };
     window.addEventListener('global-search', handleSearch);
     return () => window.removeEventListener('global-search', handleSearch);

@@ -217,27 +217,32 @@ export default function Header() {
 
       {/* Row 3: Search Bar */}
       <div style={{ padding: '10px 16px' }}>
-        <div className={styles.searchBar} ref={searchRef} style={{ maxWidth: '600px', margin: '0 auto', height: '42px' }}>
-          <input
-            id="header-search"
-            type="text"
-            className={styles.searchInput}
-            placeholder="Search for phones, brands, accessories..."
-            value={query}
-            onChange={e => handleSearch(e.target.value)}
-            onFocus={() => query && setShowDropdown(true)}
-            autoComplete="off"
-            style={{ fontSize: '15px' }}
-          />
-          <button className={styles.searchBtn} aria-label="Search" style={{ width: '50px' }}>
-            <Search size={18} strokeWidth={2.5} />
-          </button>
+        <div className={styles.searchBarWrapper} ref={searchRef}>
+          <div className={styles.searchBar}>
+            <input
+              id="header-search"
+              type="text"
+              className={styles.searchInput}
+              placeholder="Search for phones, brands, accessories..."
+              value={query}
+              onChange={e => handleSearch(e.target.value)}
+              onFocus={() => query && setShowDropdown(true)}
+              autoComplete="off"
+            />
+            <button className={styles.searchBtn} aria-label="Search">
+              <Search size={18} strokeWidth={2.5} />
+            </button>
+          </div>
 
           {/* Search Dropdown */}
-          {showDropdown && (
-            <div className={styles.searchDropdown} style={{ top: '42px', borderRadius: '12px', marginTop: '4px' }}>
+          {showDropdown && pathname !== '/' && (
+            <div className={styles.searchDropdown}>
               {isSearching ? (
-                <div className={styles.searchEmpty}>Searching…</div>
+                <div className={styles.searchEmpty}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                    <Search size={16} style={{ animation: 'spin 2s linear infinite' }} /> Searching...
+                  </div>
+                </div>
               ) : results.length > 0 ? (
                 results.map(product => (
                   <Link
@@ -246,13 +251,13 @@ export default function Header() {
                     className={styles.searchResultItem}
                     onClick={() => { setShowDropdown(false); setQuery(''); }}
                   >
-                    {product.images?.[0] ? (
-                      <img src={product.images[0]} alt={product.name} className={styles.searchResultImg} referrerPolicy="no-referrer" />
-                    ) : (
-                      <div className={styles.searchResultImg} style={{ background: '#f0f2f5', display:'flex', alignItems:'center', justifyContent:'center' }}>
-                        <Smartphone size={18} color="#9aa3b2" />
-                      </div>
-                    )}
+                    <div className={styles.searchResultImgWrap}>
+                      {product.images?.[0] ? (
+                        <img src={product.images[0]} alt={product.name} className={styles.searchResultImg} referrerPolicy="no-referrer" />
+                      ) : (
+                        <Smartphone size={24} color="#94a3b8" />
+                      )}
+                    </div>
                     <div className={styles.searchResultInfo}>
                       <div className={styles.searchResultName}>{product.name}</div>
                       <div className={styles.searchResultPrice}>{formatINR(product.our_price)}</div>
@@ -260,7 +265,9 @@ export default function Header() {
                   </Link>
                 ))
               ) : (
-                <div className={styles.searchEmpty}>No results found</div>
+                <div className={styles.searchEmpty}>
+                  No results found for <strong>"{query}"</strong>
+                </div>
               )}
             </div>
           )}
