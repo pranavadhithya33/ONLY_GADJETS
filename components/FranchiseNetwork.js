@@ -120,13 +120,13 @@ export default function FranchiseNetwork() {
               onMouseLeave={() => setActiveNode(null)}
               style={{
                 position: 'absolute',
-                left: \`\${f.x}%\`,
-                top: \`\${(f.y / 130) * 100}%\`,
+                left: `${f.x}%`,
+                top: `${(f.y / 130) * 100}%`,
                 transform: 'translate(-50%, -50%)',
                 cursor: 'pointer',
                 zIndex: activeNode?.id === f.id ? 10 : 1,
                 opacity: isLoaded ? 1 : 0,
-                transition: \`opacity 0.5s ease \${i * 0.03}s, transform 0.2s ease\`
+                transition: `opacity 0.5s ease ${i * 0.03}s, transform 0.2s ease`
               }}
             >
               {/* Pulsing core */}
@@ -135,7 +135,7 @@ export default function FranchiseNetwork() {
                 height: activeNode?.id === f.id ? '12px' : '8px',
                 backgroundColor: '#00ffff',
                 borderRadius: '50%',
-                boxShadow: \`0 0 \${activeNode?.id === f.id ? '20px' : '10px'} #00ffff\`,
+                boxShadow: `0 0 ${activeNode?.id === f.id ? '20px' : '10px'} #00ffff`,
                 transition: 'all 0.3s ease'
               }} />
               
@@ -149,7 +149,7 @@ export default function FranchiseNetwork() {
                 height: '100%',
                 borderRadius: '50%',
                 border: '1px solid #00ffff',
-                animation: \`pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite \${i * 0.1}s\`,
+                animation: `pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite ${i * 0.1}s`,
                 pointerEvents: 'none'
               }} />
 
@@ -158,7 +158,7 @@ export default function FranchiseNetwork() {
                 position: 'absolute',
                 bottom: '100%',
                 left: '50%',
-                transform: \`translateX(-50%) translateY(\${activeNode?.id === f.id ? '-12px' : '0px'})\`,
+                transform: `translateX(-50%) translateY(${activeNode?.id === f.id ? '-12px' : '0px'})`,
                 opacity: activeNode?.id === f.id ? 1 : 0,
                 visibility: activeNode?.id === f.id ? 'visible' : 'hidden',
                 background: 'rgba(4, 11, 20, 0.85)',
@@ -189,13 +189,13 @@ export default function FranchiseNetwork() {
         }}>
           {franchises.map((f, i) => (
             <div
-              key={\`roster-\${f.id}\`}
+              key={`roster-${f.id}`}
               onMouseEnter={() => setActiveNode(f)}
               onMouseLeave={() => setActiveNode(null)}
               className="franchise-card"
               style={{
                 background: activeNode?.id === f.id ? 'rgba(0, 255, 255, 0.1)' : 'rgba(255,255,255,0.02)',
-                border: \`1px solid \${activeNode?.id === f.id ? 'rgba(0, 255, 255, 0.3)' : 'rgba(255,255,255,0.05)'}\`,
+                border: `1px solid ${activeNode?.id === f.id ? 'rgba(0, 255, 255, 0.3)' : 'rgba(255,255,255,0.05)'}`,
                 padding: '16px 20px',
                 borderRadius: '16px',
                 backdropFilter: 'blur(10px)',
@@ -208,7 +208,7 @@ export default function FranchiseNetwork() {
                 transform: activeNode?.id === f.id ? 'translateY(-2px)' : 'translateY(0)',
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 opacity: isLoaded ? 1 : 0,
-                animation: isLoaded ? \`fade-in-up 0.5s ease forwards \${i * 0.05}s\` : 'none'
+                animation: isLoaded ? `fade-in-up 0.5s ease forwards ${i * 0.05}s` : 'none'
               }}
             >
               <div style={{
@@ -233,7 +233,7 @@ export default function FranchiseNetwork() {
         </div>
       </div>
 
-      <style jsx global>{\`
+      <style jsx global>{`
         @keyframes pulse-ring {
           0% {
             transform: translate(-50%, -50%) scale(1);
@@ -254,7 +254,7 @@ export default function FranchiseNetwork() {
             transform: translateY(0);
           }
         }
-      \`}</style>
+      `}</style>
     </div>
   );
 }
