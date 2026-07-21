@@ -3,31 +3,31 @@
 import React, { useState, useEffect } from 'react';
 
 const franchises = [
-  { id: 1, name: 'Shanmugapriya', location: 'Mudichur, Chennai', x: 84, y: 16 },
-  { id: 2, name: 'Kamaraj', location: 'Kolathur, Chennai', x: 83, y: 13 },
-  { id: 3, name: 'Sivagami', location: 'Kumbakonam', x: 68, y: 56 },
-  { id: 4, name: 'Imthiyas', location: 'Thiruvanamalai', x: 65, y: 30 },
-  { id: 5, name: 'Senthilmurugan', location: 'Jeyamkondan', x: 64, y: 51 },
-  { id: 6, name: 'Ahamed', location: 'Thondi, Ramanathapuram', x: 58, y: 75 },
-  { id: 7, name: 'Dinesh', location: 'Coimbatore (div 1)', x: 25, y: 50 },
-  { id: 8, name: 'Jaganraj', location: 'Attur', x: 55, y: 40 },
-  { id: 9, name: 'JK Yashwanth Raj', location: 'Rajapalayam', x: 35, y: 82 },
-  { id: 10, name: 'Karthick C', location: 'Hosur', x: 35, y: 25 },
-  { id: 11, name: 'Lawrence', location: 'Taramani, Chennai', x: 85, y: 14 },
-  { id: 12, name: 'Mohamed', location: 'Cumbum (Theni)', x: 38, y: 78 },
-  { id: 13, name: 'Pandi Rithika Sai', location: 'Tuticorin', x: 52, y: 88 },
-  { id: 14, name: 'Rathina', location: 'Tenkasi', x: 36, y: 87 },
-  { id: 15, name: 'Sakthivel', location: 'Kattupakkam, Chennai', x: 82, y: 15 },
-  { id: 16, name: 'Saran', location: 'Salem (div 1)', x: 48, y: 38 },
-  { id: 17, name: 'Saravanan', location: 'Manachanallur', x: 58, y: 53 },
-  { id: 18, name: 'Sarbudeen', location: 'Trichy Central', x: 59, y: 55 },
-  { id: 19, name: 'Sevagan', location: 'Thitakudi, Cuddalore', x: 68, y: 46 },
-  { id: 20, name: 'Vasanth', location: 'Madurai (div 1)', x: 45, y: 74 },
-  { id: 21, name: 'Vinothini', location: 'Lalgudi', x: 60, y: 54 },
-  { id: 22, name: 'Eshwari', location: 'Mylapore, Chennai', x: 86, y: 15 },
-  { id: 23, name: 'Vignesh', location: 'Coimbatore (div 2)', x: 27, y: 51 },
-  { id: 24, name: 'Ramamoorthy', location: 'Madurai (div 2)', x: 46, y: 76 },
-  { id: 25, name: 'M L Sanjeev', location: 'Ranipet', x: 75, y: 20 },
+  { id: 1, name: 'Shanmugapriya', location: 'Mudichur, Chennai', x: 80, y: 10 },
+  { id: 2, name: 'Kamaraj', location: 'Kolathur, Chennai', x: 82, y: 6 },
+  { id: 3, name: 'Sivagami', location: 'Kumbakonam', x: 74, y: 48 },
+  { id: 4, name: 'Imthiyas', location: 'Thiruvanamalai', x: 65, y: 25 },
+  { id: 5, name: 'Senthilmurugan', location: 'Jeyamkondan', x: 70, y: 44 },
+  { id: 6, name: 'Ahamed', location: 'Thondi, Ramanathapuram', x: 67, y: 68 },
+  { id: 7, name: 'Dinesh', location: 'Coimbatore (div 1)', x: 18, y: 50 },
+  { id: 8, name: 'Jaganraj', location: 'Attur', x: 55, y: 35 },
+  { id: 9, name: 'JK Yashwanth Raj', location: 'Rajapalayam', x: 38, y: 75 },
+  { id: 10, name: 'Karthick C', location: 'Hosur', x: 34, y: 8 },
+  { id: 11, name: 'Lawrence', location: 'Taramani, Chennai', x: 83, y: 8 },
+  { id: 12, name: 'Mohamed', location: 'Cumbum (Theni)', x: 30, y: 71 },
+  { id: 13, name: 'Pandi Rithika Sai', location: 'Tuticorin', x: 57, y: 85 },
+  { id: 14, name: 'Rathina', location: 'Tenkasi', x: 36, y: 83 },
+  { id: 15, name: 'Sakthivel', location: 'Kattupakkam, Chennai', x: 81, y: 7 },
+  { id: 16, name: 'Saran', location: 'Salem (div 1)', x: 48, y: 35 },
+  { id: 17, name: 'Saravanan', location: 'Manachanallur', x: 61, y: 48 },
+  { id: 18, name: 'Sarbudeen', location: 'Trichy Central', x: 62, y: 52 },
+  { id: 19, name: 'Sevagan', location: 'Thitakudi, Cuddalore', x: 68, y: 38 },
+  { id: 20, name: 'Vasanth', location: 'Madurai (div 1)', x: 48, y: 65 },
+  { id: 21, name: 'Vinothini', location: 'Lalgudi', x: 64, y: 50 },
+  { id: 22, name: 'Eshwari', location: 'Mylapore, Chennai', x: 84, y: 7 },
+  { id: 23, name: 'Vignesh', location: 'Coimbatore (div 2)', x: 20, y: 52 },
+  { id: 24, name: 'Ramamoorthy', location: 'Madurai (div 2)', x: 50, y: 67 },
+  { id: 25, name: 'M L Sanjeev', location: 'Ranipet', x: 72, y: 15 },
 ];
 
 export default function FranchiseNetwork() {
@@ -87,21 +87,22 @@ export default function FranchiseNetwork() {
           boxShadow: '0 0 60px rgba(37, 211, 102, 0.03)',
           overflow: 'hidden'
         }}>
-          {/* Abstract stylized Tamil Nadu outline */}
+          {/* Detailed Tamil Nadu Outline */}
           <svg viewBox="0 0 100 100" preserveAspectRatio="none" style={{
             position: 'absolute',
             top: 0,
             left: 0,
             width: '100%',
             height: '100%',
-            opacity: 0.1,
+            opacity: 0.15,
             pointerEvents: 'none'
           }}>
-            <polygon 
-              points="30,20 75,10 88,15 85,35 80,45 70,60 60,85 55,95 40,95 30,85 15,50 25,30" 
+            <path 
+              d="M 32 4 L 40 8 L 47 6 L 60 5 L 75 4 L 83 5 L 81 12 L 80 20 L 76 30 L 74 40 L 75 45 L 79 50 L 86 54 L 84 58 L 81 61 L 70 66 L 63 69 L 68 72 L 77 75 L 70 79 L 60 84 L 56 86 L 60 92 L 50 98 L 45 100 L 40 96 L 38 91 L 34 83 L 36 75 L 28 72 L 23 74 L 28 69 L 36 66 L 30 62 L 21 58 L 10 50 L 15 42 L 18 35 L 26 36 L 33 39 L 34 30 L 36 21 L 32 10 Z"
               fill="none" 
               stroke="#25d366" 
               strokeWidth="0.5" 
+              strokeLinejoin="round"
               strokeDasharray="2,2"
             />
             {/* Grid overlay */}
@@ -171,8 +172,8 @@ export default function FranchiseNetwork() {
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 pointerEvents: 'none'
               }}>
-                <div style={{ color: '#fff', fontWeight: 600, fontSize: '13px' }}>{f.name}</div>
-                <div style={{ color: '#25d366', fontSize: '11px', marginTop: '2px' }}>{f.location}</div>
+                <div style={{ color: '#fff', fontWeight: 600, fontSize: '13px', textAlign: 'left' }}>{f.name}</div>
+                <div style={{ color: '#25d366', fontSize: '11px', marginTop: '2px', textAlign: 'left' }}>{f.location}</div>
               </div>
             </div>
           ))}
@@ -201,7 +202,8 @@ export default function FranchiseNetwork() {
                 WebkitBackdropFilter: 'blur(10px)',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '12px',
+                justifyContent: 'flex-start',
+                gap: '16px',
                 cursor: 'pointer',
                 transform: activeNode?.id === f.id ? 'translateY(-2px)' : 'translateY(0)',
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -212,12 +214,13 @@ export default function FranchiseNetwork() {
               <div style={{
                 width: '8px',
                 height: '8px',
+                minWidth: '8px',
                 borderRadius: '50%',
                 background: activeNode?.id === f.id ? '#25d366' : 'rgba(255,255,255,0.2)',
                 boxShadow: activeNode?.id === f.id ? '0 0 10px #25d366' : 'none',
                 transition: 'all 0.3s ease'
               }} />
-              <div>
+              <div style={{ textAlign: 'left' }}>
                 <div style={{ color: activeNode?.id === f.id ? '#fff' : 'rgba(255,255,255,0.9)', fontWeight: 600, fontSize: '14px', transition: 'color 0.3s' }}>
                   {f.name}
                 </div>
