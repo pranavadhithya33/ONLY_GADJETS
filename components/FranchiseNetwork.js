@@ -81,36 +81,14 @@ export default function FranchiseNetwork() {
           width: '100%',
           maxWidth: '600px',
           aspectRatio: '3/4',
-          background: 'radial-gradient(circle at center, rgba(37, 211, 102, 0.05) 0%, rgba(0,0,0,0) 70%)',
+          backgroundImage: 'url(/tn_blueprint.png)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
           borderRadius: '32px',
           border: '1px solid rgba(255,255,255,0.05)',
           boxShadow: '0 0 60px rgba(37, 211, 102, 0.03)',
           overflow: 'hidden'
         }}>
-          {/* Detailed Tamil Nadu Outline */}
-          <svg viewBox="0 0 100 100" preserveAspectRatio="none" style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            opacity: 0.15,
-            pointerEvents: 'none'
-          }}>
-            <path 
-              d="M 32 4 L 40 8 L 47 6 L 60 5 L 75 4 L 83 5 L 81 12 L 80 20 L 76 30 L 74 40 L 75 45 L 79 50 L 86 54 L 84 58 L 81 61 L 70 66 L 63 69 L 68 72 L 77 75 L 70 79 L 60 84 L 56 86 L 60 92 L 50 98 L 45 100 L 40 96 L 38 91 L 34 83 L 36 75 L 28 72 L 23 74 L 28 69 L 36 66 L 30 62 L 21 58 L 10 50 L 15 42 L 18 35 L 26 36 L 33 39 L 34 30 L 36 21 L 32 10 Z"
-              fill="none" 
-              stroke="#25d366" 
-              strokeWidth="0.5" 
-              strokeLinejoin="round"
-              strokeDasharray="2,2"
-            />
-            {/* Grid overlay */}
-            <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
-              <path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="0.2"/>
-            </pattern>
-            <rect width="100" height="100" fill="url(#grid)" />
-          </svg>
 
           {/* Map Nodes */}
           {franchises.map((f, i) => (
