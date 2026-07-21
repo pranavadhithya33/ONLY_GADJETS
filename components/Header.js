@@ -235,7 +235,7 @@ export default function Header() {
           </div>
 
           {/* Search Dropdown */}
-          {showDropdown && pathname !== '/' && (
+          {showDropdown && (
             <div className={styles.searchDropdown}>
               {isSearching ? (
                 <div className={styles.searchEmpty}>

@@ -76,15 +76,16 @@ export default function TrackOrderPage({ params }) {
   const isCancelled = order.status === 'cancelled';
   const isDelivered = order.status === 'delivered';
 
-  // 6-step manual destination system
   const currentStep = order.current_step || 1;
   const steps = [
-    { num: 1, text: order.step1 || 'Order Placed' },
-    { num: 2, text: order.step2 || 'Pending Hub Update' },
-    { num: 3, text: order.step3 || 'Pending Hub Update' },
-    { num: 4, text: order.step4 || 'Pending Hub Update' },
-    { num: 5, text: order.step5 || 'Pending Hub Update' },
-    { num: 6, text: order.step6 || 'Pending Hub Update' }
+    { num: 1, text: order.step1 || 'Payment received' },
+    { num: 2, text: order.step2 || 'Order scanned at howrah' },
+    { num: 3, text: order.step3 || 'Scanned at delhi' },
+    { num: 4, text: order.step4 || 'Shipped to Bengaluru' },
+    { num: 5, text: order.step5 || 'Final billing at Bengaluru' },
+    { num: 6, text: order.step6 || 'Shipped to chennai' },
+    { num: 7, text: order.step7 || 'Arrived at chennai' },
+    { num: 8, text: order.step8 || 'Out for final delivery' }
   ];
 
   // Active step text for location banner
@@ -187,10 +188,10 @@ export default function TrackOrderPage({ params }) {
           )}
         </div>
 
-        {/* 6-Step Flowchart Timeline */}
+        {/* 8-Step Flowchart Timeline */}
         {!isCancelled && (
           <div style={{ marginBottom: 32, background: '#fff', border: '1px solid var(--border)', borderRadius: 20, padding: '24px 16px', boxShadow: 'var(--shadow-sm)' }}>
-            <div className="flowchart-timeline" style={{ '--fill-pct': `${((currentStep - 1) / 5) * 100}%` }}>
+            <div className="flowchart-timeline" style={{ '--fill-pct': `${((currentStep - 1) / 7) * 100}%` }}>
               <div className="flowchart-line">
                 <div className="flowchart-progress-fill" />
               </div>
@@ -231,6 +232,12 @@ export default function TrackOrderPage({ params }) {
             <Package size={18} color="var(--brand-primary)" />
             Order Summary
           </div>
+          
+          {order.estimated_delivery_date && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#e0f2fe', padding: '12px 16px', borderRadius: 12, marginBottom: 16, color: '#0369a1', fontWeight: 700, fontSize: 13 }}>
+              📅 Estimated Delivery: {new Date(order.estimated_delivery_date).toLocaleDateString('en-IN', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}
+            </div>
+          )}
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>

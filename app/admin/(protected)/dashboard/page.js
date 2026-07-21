@@ -54,13 +54,27 @@ export default function AdminDashboard() {
   const [productSearch, setProductSearch] = useState('');
   const [productSearchQuery, setProductSearchQuery] = useState('');
   
+  const [productSortBy, setProductSortBy] = useState('newest');
+  const [selectedProducts, setSelectedProducts] = useState([]);
+  const [visibilityFilter, setVisibilityFilter] = useState('all');
+  
   const filteredProducts = products.filter(p => {
+    if (visibilityFilter === 'visible' && p.stock <= 0) return false;
+    if (visibilityFilter === 'hidden' && p.stock > 0) return false;
+
     if (!productSearchQuery) return true;
     const query = productSearchQuery.toLowerCase().trim();
     return (
       p.name?.toLowerCase().includes(query) ||
       p.category?.toLowerCase().includes(query)
     );
+  }).sort((a, b) => {
+    if (productSortBy === 'price-asc') return a.our_price - b.our_price;
+    if (productSortBy === 'price-desc') return b.our_price - a.our_price;
+    if (productSortBy === 'name') return (a.name || '').localeCompare(b.name || '');
+    if (productSortBy === 'oldest') return new Date(a.created_at || 0) - new Date(b.created_at || 0);
+    // Default 'newest'
+    return new Date(b.created_at || 0) - new Date(a.created_at || 0);
   });
 
   const [orders, setOrders] = useState([]);
@@ -103,6 +117,9 @@ export default function AdminDashboard() {
     step4: '',
     step5: '',
     step6: '',
+    step7: '',
+    step8: '',
+    estimated_delivery_date: '',
     current_step: 1
   });
 
@@ -243,6 +260,8 @@ export default function AdminDashboard() {
         };
 
         const colIndices = {
+          id: getColIndex(['id', 'uuid', 'product_id']),
+          slug: getColIndex(['slug', 'url slug']),
           name: getColIndex(['name', 'product name', 'title']),
           category: getColIndex(['category']),
           our_price: getColIndex(['our price (inr)', 'our price', 'our_price', 'price']),
@@ -268,6 +287,8 @@ export default function AdminDashboard() {
             return val !== undefined && val !== null ? String(val).trim() : defaultValue;
           };
 
+          const id = getValue(colIndices.id);
+          const slug = getValue(colIndices.slug);
           const name = getValue(colIndices.name);
           const category = getValue(colIndices.category, 'smartphones');
           const our_price = Number(getValue(colIndices.our_price)) || 0;
@@ -289,6 +310,8 @@ export default function AdminDashboard() {
           if (!category) validationErrors.push('Missing category');
 
           parsed.push({
+            id,
+            slug,
             name,
             category,
             our_price,
@@ -575,6 +598,9 @@ export default function AdminDashboard() {
         step4: o.step4 || '',
         step5: o.step5 || '',
         step6: o.step6 || '',
+        step7: o.step7 || '',
+        step8: o.step8 || '',
+        estimated_delivery_date: o.estimated_delivery_date || '',
         current_step: o.current_step || 1
       });
     }
@@ -592,6 +618,9 @@ export default function AdminDashboard() {
           step4: routeEditForm.step4,
           step5: routeEditForm.step5,
           step6: routeEditForm.step6,
+          step7: routeEditForm.step7,
+          step8: routeEditForm.step8,
+          estimated_delivery_date: routeEditForm.estimated_delivery_date,
           current_step: routeEditForm.current_step,
         })
       });
@@ -644,6 +673,74 @@ export default function AdminDashboard() {
       
       return updated;
     });
+  };
+
+  const handleBulkHide = async () => {
+    if (selectedProducts.length === 0) return;
+    if (!confirm(`Hide ${selectedProducts.length} products (set stock to 0)?`)) return;
+    try {
+      const res = await fetch('/api/products/bulk-action', {
+        method: 'POST',
+        headers: getAdminHeaders(),
+        body: JSON.stringify({ action: 'hide', ids: selectedProducts })
+      });
+      if (!res.ok) throw new Error('Failed to hide products');
+      setSelectedProducts([]);
+      await fetchProducts();
+    } catch (err) { alert(err.message); }
+  };
+
+  const handleBulkUnhide = async () => {
+    if (selectedProducts.length === 0) return;
+    if (!confirm(`Unhide ${selectedProducts.length} products (set stock to 100)?`)) return;
+    try {
+      const res = await fetch('/api/products/bulk-action', {
+        method: 'POST',
+        headers: getAdminHeaders(),
+        body: JSON.stringify({ action: 'unhide', ids: selectedProducts })
+      });
+      if (!res.ok) throw new Error('Failed to unhide products');
+      setSelectedProducts([]);
+      await fetchProducts();
+    } catch (err) { alert(err.message); }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedProducts.length === 0) return;
+    if (!confirm(`Permanently delete ${selectedProducts.length} products?`)) return;
+    try {
+      const res = await fetch('/api/products/bulk-action', {
+        method: 'POST',
+        headers: getAdminHeaders(),
+        body: JSON.stringify({ action: 'delete', ids: selectedProducts })
+      });
+      if (!res.ok) throw new Error('Failed to delete products');
+      setSelectedProducts([]);
+      await fetchProducts();
+    } catch (err) { alert(err.message); }
+  };
+
+  const exportToExcel = () => {
+    if (products.length === 0) return;
+    const headers = [
+      "ID", "Slug", "Name", "Category", "Our Price (INR)", "Online Price (INR)", 
+      "Amazon Price (INR)", "Flipkart Price (INR)", "Amazon URL", "Flipkart URL", 
+      "Description", "Images (Comma-separated URLs)", "Featured (TRUE/FALSE)", 
+      "Prepaid Discount %"
+    ];
+    
+    const rows = products.map(p => [
+      p.id, p.slug, p.name, p.category, p.our_price, p.online_price,
+      p.amazon_price, p.flipkart_price, p.amazon_url, p.flipkart_url,
+      p.description, (p.images || []).join(', '), p.featured ? 'TRUE' : 'FALSE',
+      p.prepaid_discount_pct || 3
+    ]);
+
+    const worksheetData = [headers, ...rows];
+    const ws = XLSX.utils.aoa_to_sheet(worksheetData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Products");
+    XLSX.writeFile(wb, "all_products_export.xlsx");
   };
 
   const handleOrderSave = async () => {
@@ -1191,11 +1288,38 @@ export default function AdminDashboard() {
                 >
                   📥 Bulk Import (Excel)
                 </button>
+                <button 
+                  onClick={exportToExcel}
+                  className="btn btn-outline"
+                  style={{ display: 'flex', alignItems: 'center', gap: '6px', border: '1px solid var(--border)', padding: '10px 16px', borderRadius: '8px', fontWeight: '600', cursor: 'pointer' }}
+                >
+                  📤 Export to Excel
+                </button>
                 <button onClick={openAdd} className={styles.addBtn} id="add-product-btn">
                   <Plus size={16} /> Add Product
                 </button>
               </div>
             </div>
+
+            {/* Bulk Actions */}
+            {selectedProducts.length > 0 && (
+              <div style={{ background: '#f8fafc', padding: '12px 16px', borderRadius: '8px', marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #e2e8f0' }}>
+                <div style={{ fontWeight: '600', fontSize: '14px', color: '#0f172a' }}>
+                  {selectedProducts.length} product(s) selected
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button onClick={handleBulkUnhide} className="btn btn-outline" style={{ padding: '8px 12px', fontSize: '13px' }}>
+                    Unhide Selected
+                  </button>
+                  <button onClick={handleBulkHide} className="btn btn-outline" style={{ padding: '8px 12px', fontSize: '13px' }}>
+                    Hide Selected
+                  </button>
+                  <button onClick={handleBulkDelete} className={styles.deleteBtn} style={{ padding: '8px 12px', fontSize: '13px' }}>
+                    Delete Selected
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Amazon Quick Importer */}
             <div style={{ background: 'var(--bg-highlight)', padding: '16px', borderRadius: '12px', marginBottom: '16px', border: '1px solid var(--border-focus)' }}>
@@ -1279,6 +1403,34 @@ export default function AdminDashboard() {
                   }}
                 />
               </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-secondary)' }}>Visibility:</span>
+                <select 
+                  className="form-input" 
+                  style={{ padding: '10px 16px', width: 'auto' }}
+                  value={visibilityFilter}
+                  onChange={(e) => setVisibilityFilter(e.target.value)}
+                >
+                  <option value="all">All Products</option>
+                  <option value="visible">Visible Only</option>
+                  <option value="hidden">Hidden Only</option>
+                </select>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-secondary)' }}>Sort by:</span>
+                <select 
+                  className="form-input" 
+                  style={{ padding: '10px 16px', width: 'auto' }}
+                  value={productSortBy}
+                  onChange={(e) => setProductSortBy(e.target.value)}
+                >
+                  <option value="newest">Newest First</option>
+                  <option value="oldest">Oldest First</option>
+                  <option value="price-asc">Price: Low to High</option>
+                  <option value="price-desc">Price: High to Low</option>
+                  <option value="name">Name (A-Z)</option>
+                </select>
+              </div>
               <button 
                 onClick={() => setProductSearchQuery(productSearch)}
                 className="btn btn-primary"
@@ -1317,6 +1469,20 @@ export default function AdminDashboard() {
                 <table className={styles.table}>
                   <thead>
                     <tr>
+                      <th style={{ width: '40px' }}>
+                        <input 
+                          type="checkbox" 
+                          checked={filteredProducts.length > 0 && selectedProducts.length === filteredProducts.length}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedProducts(filteredProducts.map(p => p.id));
+                            } else {
+                              setSelectedProducts([]);
+                            }
+                          }}
+                          style={{ width: '16px', height: '16px', accentColor: 'var(--brand-primary)' }}
+                        />
+                      </th>
                       <th>Image</th>
                       <th>Name</th>
                       <th>Category</th>
@@ -1328,6 +1494,20 @@ export default function AdminDashboard() {
                   <tbody>
                     {filteredProducts.map(p => (
                       <tr key={p.id}>
+                        <td data-label="Select">
+                          <input 
+                            type="checkbox"
+                            checked={selectedProducts.includes(p.id)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedProducts(prev => [...prev, p.id]);
+                              } else {
+                                setSelectedProducts(prev => prev.filter(id => id !== p.id));
+                              }
+                            }}
+                            style={{ width: '16px', height: '16px', accentColor: 'var(--brand-primary)' }}
+                          />
+                        </td>
                         <td data-label="Image">
                           {p.images?.[0] ? (
                             <img src={p.images[0]} alt={p.name} className={styles.productThumb} />
@@ -1339,7 +1519,8 @@ export default function AdminDashboard() {
                         </td>
                         <td data-label="Name" style={{ fontWeight:600, maxWidth:180 }}>
                           <div style={{ overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{p.name}</div>
-                          {p.featured && <span style={{ fontSize:10, background:'#fef3d0', color:'#d4890a', padding:'1px 6px', borderRadius:99, fontWeight:700 }}>Featured</span>}
+                          {p.featured && <span style={{ fontSize:10, background:'#fef3d0', color:'#d4890a', padding:'1px 6px', borderRadius:99, fontWeight:700, marginRight: 4 }}>Featured</span>}
+                          {p.stock <= 0 && <span style={{ fontSize:10, background:'#fee2e2', color:'#ef4444', padding:'1px 6px', borderRadius:99, fontWeight:700 }}>Hidden</span>}
                         </td>
                         <td data-label="Category" style={{ fontSize:13, color:'var(--text-secondary)' }}>{p.category || '—'}</td>
                         <td data-label="Market Price" style={{ fontSize:13, color:'#9aa3b2', textDecoration:'line-through' }}>
@@ -1815,7 +1996,17 @@ export default function AdminDashboard() {
             </p>
 
             <div className="admin-route-grid">
-              {[1, 2, 3, 4, 5, 6].map((num) => (
+              <div style={{ gridColumn: '1 / -1', marginBottom: '16px' }}>
+                <label className="form-label" style={{ fontWeight: 700 }}>Estimated Delivery Date (Optional)</label>
+                <input
+                  type="date"
+                  className="form-input"
+                  style={{ padding: '8px 12px', fontSize: 13, height: '36px' }}
+                  value={routeEditForm.estimated_delivery_date || ''}
+                  onChange={(e) => setRouteEditForm(prev => ({ ...prev, estimated_delivery_date: e.target.value }))}
+                />
+              </div>
+              {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
                 <div key={num} className={`admin-route-step-card ${routeEditForm.current_step === num ? 'active' : ''}`}>
                   <div className="admin-route-radio-wrapper">
                     <input
@@ -1842,7 +2033,14 @@ export default function AdminDashboard() {
                       className="form-input"
                       style={{ padding: '8px 12px', fontSize: 13, height: '36px' }}
                       placeholder={
-                        num === 1 ? "Order Placed" : "Pending Hub Update"
+                        num === 1 ? "Payment received" : 
+                        num === 2 ? "Order scanned at howrah" :
+                        num === 3 ? "Scanned at delhi" :
+                        num === 4 ? "Shipped to Bengaluru" :
+                        num === 5 ? "Final billing at Bengaluru" :
+                        num === 6 ? "Shipped to chennai" :
+                        num === 7 ? "Arrived at chennai" :
+                        "Out for final delivery"
                       }
                       value={routeEditForm[`step${num}`] || ''}
                       onChange={(e) => setRouteEditForm(prev => ({ ...prev, [`step${num}`]: e.target.value }))}

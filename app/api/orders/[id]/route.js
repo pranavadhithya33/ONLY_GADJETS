@@ -75,12 +75,17 @@ export async function PUT(req, context) {
       updateData.custom_step = body.custom_step || null;
     }
 
-    // Allow updating step1 through step6
-    ['step1', 'step2', 'step3', 'step4', 'step5', 'step6'].forEach(s => {
+    // Allow updating step1 through step8
+    ['step1', 'step2', 'step3', 'step4', 'step5', 'step6', 'step7', 'step8'].forEach(s => {
       if (body[s] !== undefined) {
         updateData[s] = body[s] || '';
       }
     });
+
+    // Allow updating estimated_delivery_date
+    if (body.estimated_delivery_date !== undefined) {
+      updateData.estimated_delivery_date = body.estimated_delivery_date || null;
+    }
 
     // Allow updating current_step
     if (body.current_step !== undefined) {

@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation';
 import Header from '@/components/Header';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import { CartProvider } from '@/context/CartContext';
+import FranchiseNetwork from '@/components/FranchiseNetwork';
 
 export default function ClientLayoutWrapper({ children }) {
   const pathname = usePathname();
@@ -49,85 +50,9 @@ export default function ClientLayoutWrapper({ children }) {
                 <span style={{ fontSize: 18 }}>📱</span> WhatsApp: +91 73971 89222
               </a>
             </div>
-
-            <div style={{ fontWeight: 700, color: '#fff', marginBottom: 16, fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-              <span style={{ fontSize: 20 }}>🚚</span> Cash on Delivery Locations
-            </div>
-            
-            <div style={{ 
-              display: 'grid', 
-              gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))', 
-              gap: '12px',
-              maxWidth: '680px',
-              margin: '0 auto',
-              width: '100%'
-            }}>
-              <div style={{ background: 'rgba(0,0,0,0.3)', padding: '10px 24px', borderRadius: '30px', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'flex-start' }}>
-                <span style={{ fontWeight: 600, color: '#25d366', fontSize: 14 }}>Ahamed:</span>
-                <span style={{ color: 'rgba(255,255,255,0.85)', fontSize: 13, letterSpacing: '0.2px' }}>Thondi, Ramanathapuram</span>
-              </div>
-              <div style={{ background: 'rgba(0,0,0,0.3)', padding: '10px 24px', borderRadius: '30px', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'flex-start' }}>
-                <span style={{ fontWeight: 600, color: '#25d366', fontSize: 14 }}>Dinesh:</span>
-                <span style={{ color: 'rgba(255,255,255,0.85)', fontSize: 13, letterSpacing: '0.2px' }}>Coimbatore (division 1)</span>
-              </div>
-              <div style={{ background: 'rgba(0,0,0,0.3)', padding: '10px 24px', borderRadius: '30px', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'flex-start' }}>
-                <span style={{ fontWeight: 600, color: '#25d366', fontSize: 14 }}>Jaganraj:</span>
-                <span style={{ color: 'rgba(255,255,255,0.85)', fontSize: 13, letterSpacing: '0.2px' }}>Attur</span>
-              </div>
-              <div style={{ background: 'rgba(0,0,0,0.3)', padding: '10px 24px', borderRadius: '30px', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'flex-start' }}>
-                <span style={{ fontWeight: 600, color: '#25d366', fontSize: 14 }}>JK Yashwanth Raj:</span>
-                <span style={{ color: 'rgba(255,255,255,0.85)', fontSize: 13, letterSpacing: '0.2px' }}>Rajapalayam</span>
-              </div>
-              <div style={{ background: 'rgba(0,0,0,0.3)', padding: '10px 24px', borderRadius: '30px', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'flex-start' }}>
-                <span style={{ fontWeight: 600, color: '#25d366', fontSize: 14 }}>Karthick C:</span>
-                <span style={{ color: 'rgba(255,255,255,0.85)', fontSize: 13, letterSpacing: '0.2px' }}>Hosur</span>
-              </div>
-              <div style={{ background: 'rgba(0,0,0,0.3)', padding: '10px 24px', borderRadius: '30px', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'flex-start' }}>
-                <span style={{ fontWeight: 600, color: '#25d366', fontSize: 14 }}>Lawrence:</span>
-                <span style={{ color: 'rgba(255,255,255,0.85)', fontSize: 13, letterSpacing: '0.2px' }}>Taramani, Chennai</span>
-              </div>
-              <div style={{ background: 'rgba(0,0,0,0.3)', padding: '10px 24px', borderRadius: '30px', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'flex-start' }}>
-                <span style={{ fontWeight: 600, color: '#25d366', fontSize: 14 }}>Mohamed:</span>
-                <span style={{ color: 'rgba(255,255,255,0.85)', fontSize: 13, letterSpacing: '0.2px' }}>Cumbum (Theni)</span>
-              </div>
-              <div style={{ background: 'rgba(0,0,0,0.3)', padding: '10px 24px', borderRadius: '30px', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'flex-start' }}>
-                <span style={{ fontWeight: 600, color: '#25d366', fontSize: 14 }}>Pandi Rithika Sai:</span>
-                <span style={{ color: 'rgba(255,255,255,0.85)', fontSize: 13, letterSpacing: '0.2px' }}>Tuticorin</span>
-              </div>
-              <div style={{ background: 'rgba(0,0,0,0.3)', padding: '10px 24px', borderRadius: '30px', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'flex-start' }}>
-                <span style={{ fontWeight: 600, color: '#25d366', fontSize: 14 }}>Rathina:</span>
-                <span style={{ color: 'rgba(255,255,255,0.85)', fontSize: 13, letterSpacing: '0.2px' }}>Tenkasi</span>
-              </div>
-              <div style={{ background: 'rgba(0,0,0,0.3)', padding: '10px 24px', borderRadius: '30px', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'flex-start' }}>
-                <span style={{ fontWeight: 600, color: '#25d366', fontSize: 14 }}>Sakthivel:</span>
-                <span style={{ color: 'rgba(255,255,255,0.85)', fontSize: 13, letterSpacing: '0.2px' }}>Kattupakkam (Chennai)</span>
-              </div>
-              <div style={{ background: 'rgba(0,0,0,0.3)', padding: '10px 24px', borderRadius: '30px', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'flex-start' }}>
-                <span style={{ fontWeight: 600, color: '#25d366', fontSize: 14 }}>Saran:</span>
-                <span style={{ color: 'rgba(255,255,255,0.85)', fontSize: 13, letterSpacing: '0.2px' }}>Salem (division 1)</span>
-              </div>
-              <div style={{ background: 'rgba(0,0,0,0.3)', padding: '10px 24px', borderRadius: '30px', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'flex-start' }}>
-                <span style={{ fontWeight: 600, color: '#25d366', fontSize: 14 }}>Saravanan:</span>
-                <span style={{ color: 'rgba(255,255,255,0.85)', fontSize: 13, letterSpacing: '0.2px' }}>Manachanallur</span>
-              </div>
-              <div style={{ background: 'rgba(0,0,0,0.3)', padding: '10px 24px', borderRadius: '30px', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'flex-start' }}>
-                <span style={{ fontWeight: 600, color: '#25d366', fontSize: 14 }}>Sarbudeen:</span>
-                <span style={{ color: 'rgba(255,255,255,0.85)', fontSize: 13, letterSpacing: '0.2px' }}>Trichy Central</span>
-              </div>
-              <div style={{ background: 'rgba(0,0,0,0.3)', padding: '10px 24px', borderRadius: '30px', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'flex-start' }}>
-                <span style={{ fontWeight: 600, color: '#25d366', fontSize: 14 }}>Sevagan:</span>
-                <span style={{ color: 'rgba(255,255,255,0.85)', fontSize: 13, letterSpacing: '0.2px' }}>Thitakudi, Cuddalore</span>
-              </div>
-              <div style={{ background: 'rgba(0,0,0,0.3)', padding: '10px 24px', borderRadius: '30px', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'flex-start' }}>
-                <span style={{ fontWeight: 600, color: '#25d366', fontSize: 14 }}>Vasanth:</span>
-                <span style={{ color: 'rgba(255,255,255,0.85)', fontSize: 13, letterSpacing: '0.2px' }}>Madurai (division 1)</span>
-              </div>
-              <div style={{ background: 'rgba(0,0,0,0.3)', padding: '10px 24px', borderRadius: '30px', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'flex-start' }}>
-                <span style={{ fontWeight: 600, color: '#25d366', fontSize: 14 }}>Vinothini:</span>
-                <span style={{ color: 'rgba(255,255,255,0.85)', fontSize: 13, letterSpacing: '0.2px' }}>Lalgudi</span>
-              </div>
-            </div>
           </div>
+          
+          <FranchiseNetwork />
           
           <div suppressHydrationWarning style={{ marginTop: 24, fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>
             © {new Date().getFullYear()} Only Gadjets. All rights reserved.

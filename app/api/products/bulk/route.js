@@ -63,15 +63,14 @@ export async function POST(req) {
         
         let slug = baseSlug || 'product';
 
-        // Check if slug exists, make it unique
-        const { data: existing } = await adminSupabase
-          .from('products')
-          .select('id')
-          .eq('slug', slug)
-          .maybeSingle();
-
-        if (existing) {
-          slug = `${slug}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+        // Check if product exists by ID (if provided) or slug
+        let existingProduct = null;
+        if (product.id) {
+          const { data } = await adminSupabase.from('products').select('id, slug').eq('id', product.id).maybeSingle();
+          existingProduct = data;
+        } else {
+          const { data } = await adminSupabase.from('products').select('id, slug').eq('slug', slug).maybeSingle();
+          existingProduct = data;
         }
 
         // Parse images
@@ -104,29 +103,50 @@ export async function POST(req) {
           }
         }
 
-        // Insert product
-        const { data: insertedProduct, error: productError } = await adminSupabase
-          .from('products')
-          .insert([{
-            name: name.trim(),
-            slug,
-            images: imagesArray,
-            online_price: Number(online_price) || 0,
-            amazon_price: Number(amazon_price) || 0,
-            flipkart_price: Number(flipkart_price) || 0,
-            amazon_url: amazon_url || '',
-            flipkart_url: flipkart_url || '',
-            our_price: Number(our_price),
-            description: description || '',
-            stock: 100, // Default to in stock
-            category: category.trim().toLowerCase(),
-            featured: featured === true || String(featured).toLowerCase() === 'true' || featured === 1,
-            prepaid_discount_pct: Number(prepaid_discount_pct) || 3
-          }])
-          .select()
-          .single();
+        const productData = {
+          name: name.trim(),
+          slug: existingProduct ? existingProduct.slug : slug,
+          images: imagesArray,
+          online_price: Number(online_price) || 0,
+          amazon_price: Number(amazon_price) || 0,
+          flipkart_price: Number(flipkart_price) || 0,
+          amazon_url: amazon_url || '',
+          flipkart_url: flipkart_url || '',
+          our_price: Number(our_price),
+          description: description || '',
+          stock: 100, // Default to in stock
+          category: category.trim().toLowerCase(),
+          featured: featured === true || String(featured).toLowerCase() === 'true' || featured === 1,
+          prepaid_discount_pct: Number(prepaid_discount_pct) || 3
+        };
 
-        if (productError) throw productError;
+        let insertedProduct;
+        
+        if (existingProduct) {
+          // Update existing product
+          const { data, error: productError } = await adminSupabase
+            .from('products')
+            .update(productData)
+            .eq('id', existingProduct.id)
+            .select()
+            .single();
+          if (productError) throw productError;
+          insertedProduct = data;
+          
+          // Optionally delete existing variants so we can replace them
+          if (parsedVariants.length > 0) {
+             await adminSupabase.from('product_variants').delete().eq('product_id', existingProduct.id);
+          }
+        } else {
+          // Insert new product
+          const { data, error: productError } = await adminSupabase
+            .from('products')
+            .insert([productData])
+            .select()
+            .single();
+          if (productError) throw productError;
+          insertedProduct = data;
+        }
 
         // Insert variants if any
         if (parsedVariants.length > 0) {
@@ -144,7 +164,6 @@ export async function POST(req) {
 
           if (variantError) {
             console.error(`Failed to insert variants for ${name}:`, variantError);
-            // We don't fail the whole product insert if variants fail, but we log a warning
           }
         }
 

@@ -89,10 +89,13 @@ function HomeContent() {
       if (!selectedBrands.includes(pBrand)) return false;
     }
     
+    if (priceRange === 'under-10k') return p.our_price < 10000;
     if (priceRange === 'under-15k') return p.our_price < 15000;
-    if (priceRange === '15k-30k') return p.our_price >= 15000 && p.our_price <= 30000;
-    if (priceRange === '30k-50k') return p.our_price > 30000 && p.our_price <= 50000;
-    if (priceRange === 'above-50k') return p.our_price > 50000;
+    if (priceRange === 'under-20k') return p.our_price < 20000;
+    if (priceRange === 'under-25k') return p.our_price < 25000;
+    if (priceRange === 'under-30k') return p.our_price < 30000;
+    if (priceRange === 'under-50k') return p.our_price < 50000;
+    if (priceRange === 'above-50k') return p.our_price >= 50000;
     
     return true;
   });
@@ -253,6 +256,35 @@ function HomeContent() {
         </div>
       )}
 
+      {/* Price Segments */}
+      <div style={{ padding:'0 16px 8px' }}>
+        <div style={{ display:'flex', gap:8, overflowX:'auto', scrollbarWidth:'none', paddingBottom:4 }}>
+          {[
+            { id: '', label: 'All Prices' },
+            { id: 'under-10k', label: 'Under 10000' },
+            { id: 'under-15k', label: 'Under 15000' },
+            { id: 'under-20k', label: 'Under 20000' },
+            { id: 'under-25k', label: 'Under 25000' },
+            { id: 'under-30k', label: 'Under 30000' },
+            { id: 'under-50k', label: 'Under 50000' },
+            { id: 'above-50k', label: 'Above 50000' }
+          ].map(priceOpt => (
+            <button
+              key={priceOpt.id}
+              onClick={() => setPriceRange(priceOpt.id)}
+              style={{
+                padding:'6px 14px', borderRadius:99, fontSize:12, fontWeight:700,
+                border:'1px solid #e2e8f0', cursor:'pointer', flexShrink:0, transition:'all 0.2s',
+                background: priceRange === priceOpt.id ? '#0ea5e9' : '#fff',
+                color: priceRange === priceOpt.id ? '#fff' : '#475569',
+              }}
+            >
+              {priceOpt.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Products Grid */}
       <div id="products" style={{ padding:'12px 12px 0' }}>
         <div className="section-header" style={{ padding:'0 4px', marginBottom:12, display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:8 }}>
@@ -329,35 +361,6 @@ function HomeContent() {
                       }}
                     >
                       {sortOpt.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Price Range */}
-              <div>
-                <div style={{ fontSize: '12px', fontWeight: '600', color: '#64748b', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Price Range</div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '8px' }}>
-                  {[
-                    { id: '', label: 'Any Price' },
-                    { id: 'under-15k', label: 'Under ₹15,000' },
-                    { id: '15k-30k', label: '₹15k - ₹30k' },
-                    { id: '30k-50k', label: '₹30k - ₹50k' },
-                    { id: 'above-50k', label: 'Above ₹50k' },
-                  ].map(priceOpt => (
-                    <button
-                      key={priceOpt.id}
-                      onClick={() => setPriceRange(priceOpt.id)}
-                      style={{
-                        padding: '8px 12px', borderRadius: '8px', fontSize: '12px', fontWeight: '600',
-                        border: priceRange === priceOpt.id ? '1px solid #0ea5e9' : '1px solid #e2e8f0',
-                        background: priceRange === priceOpt.id ? '#f0f9ff' : '#fff',
-                        color: priceRange === priceOpt.id ? '#0369a1' : '#475569',
-                        cursor: 'pointer', textAlign: 'center',
-                        transition: 'all 0.1s'
-                      }}
-                    >
-                      {priceOpt.label}
                     </button>
                   ))}
                 </div>
