@@ -81,10 +81,15 @@ export default function FranchiseNetwork() {
         {/* Glassmorphic Roster Grid */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+          gridTemplateRows: 'repeat(5, auto)',
+          gridAutoFlow: 'column',
+          gridAutoColumns: 'minmax(240px, 1fr)',
           gap: '16px',
           width: '100%',
-          marginTop: '32px'
+          marginTop: '32px',
+          overflowX: 'auto',
+          paddingBottom: '16px',
+          scrollbarWidth: 'thin'
         }}>
           {franchises.map((f, i) => (
             <div
