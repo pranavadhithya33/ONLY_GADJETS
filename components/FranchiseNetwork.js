@@ -125,10 +125,16 @@ export default function FranchiseNetwork() {
                 transition: 'all 0.3s ease'
               }} />
               <div style={{ textAlign: 'left' }}>
-                <div style={{ color: activeNode?.id === f.id ? '#fff' : 'rgba(255,255,255,0.9)', fontWeight: 600, fontSize: '14px', transition: 'color 0.3s' }}>
+                <div style={{ 
+                  color: activeNode?.id === f.id ? '#fff' : ['#00ffff', '#ff00aa', '#00ffa3', '#bf00ff', '#ffb700'][i % 5], 
+                  fontWeight: 600, 
+                  fontSize: '14px', 
+                  transition: 'color 0.3s',
+                  textShadow: activeNode?.id === f.id ? 'none' : `0 0 10px ${['#00ffff', '#ff00aa', '#00ffa3', '#bf00ff', '#ffb700'][i % 5]}40`
+                }}>
                   {f.name}
                 </div>
-                <div style={{ color: activeNode?.id === f.id ? '#00ffff' : 'rgba(255,255,255,0.5)', fontSize: '12px', marginTop: '2px', transition: 'color 0.3s' }}>
+                <div style={{ color: activeNode?.id === f.id ? ['#00ffff', '#ff00aa', '#00ffa3', '#bf00ff', '#ffb700'][i % 5] : 'rgba(255,255,255,0.5)', fontSize: '12px', marginTop: '2px', transition: 'color 0.3s' }}>
                   {f.location}
                 </div>
               </div>
