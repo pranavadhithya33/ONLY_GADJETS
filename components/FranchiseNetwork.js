@@ -112,7 +112,7 @@ export default function FranchiseNetwork() {
                 transform: activeNode?.id === f.id ? 'translateY(-2px)' : 'translateY(0)',
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 opacity: isLoaded ? 1 : 0,
-                animation: isLoaded ? `fade-in-up 0.5s ease forwards ${i * 0.05}s` : 'none'
+                animation: isLoaded ? `fade-in-up 0.5s ease forwards ${i * 0.05}s, neon-pulse 2s infinite alternate ease-in-out ${0.5 + i * 0.1}s` : 'none'
               }}
             >
               <div style={{
@@ -156,6 +156,16 @@ export default function FranchiseNetwork() {
           to {
             opacity: 1;
             transform: translateY(0);
+          }
+        }
+        @keyframes neon-pulse {
+          0% {
+            box-shadow: 0 0 4px rgba(0, 255, 255, 0.05), inset 0 0 2px rgba(0, 255, 255, 0.02);
+            border-color: rgba(0, 255, 255, 0.1);
+          }
+          100% {
+            box-shadow: 0 0 16px rgba(0, 255, 255, 0.25), inset 0 0 8px rgba(0, 255, 255, 0.05);
+            border-color: rgba(0, 255, 255, 0.4);
           }
         }
       `}</style>
