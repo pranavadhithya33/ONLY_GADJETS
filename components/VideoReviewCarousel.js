@@ -39,13 +39,12 @@ export default function VideoReviewCarousel({ videos }) {
               className={styles.thumbnailCard}
               onClick={() => setActiveVideo(video)}
             >
-              {/* Fake thumbnail using the video itself, but paused and muted */}
-              <video 
+              {/* Lightweight JPEG thumbnail image to save bandwidth */}
+              <img 
                 className={styles.thumbnailVideo} 
-                src={video.url} 
-                muted 
-                playsInline 
-                preload="metadata"
+                src={video.thumbnail_url || (video.url && video.url.startsWith('/videos/') ? `/videos/thumbnails/${video.url.split('/').pop().replace(/\.(mp4|webm|mov)$/i, '.jpg')}` : '/videos/thumbnails/4.jpg')} 
+                alt={`Review by ${video.customer_name || 'Customer'}`}
+                loading="lazy" 
               />
               
               <div className={styles.overlay}>
