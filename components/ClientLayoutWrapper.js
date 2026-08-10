@@ -54,8 +54,8 @@ export default function ClientLayoutWrapper({ children }) {
           
           <FranchiseNetwork />
           
-          <div suppressHydrationWarning style={{ marginTop: 24, fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>
-            © {new Date().getFullYear()} Only Gadjets. All rights reserved.
+          <div suppressHydrationWarning style={{ marginTop: 24, fontSize: 12, color: 'rgba(255,255,255,0.4)' }}>
+            © {new Date().getFullYear()} Only Gadjets. All rights reserved. Developed by Saul Goodman.
           </div>
         </footer>
       )}
