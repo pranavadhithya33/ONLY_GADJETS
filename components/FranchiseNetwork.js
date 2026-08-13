@@ -10,7 +10,6 @@ const franchises = [
   { id: 4, name: 'Imthiyas', location: 'Thiruvanamalai', x: 65, y: 35 },
   { id: 5, name: 'Senthilmurugan', location: 'Jeyamkondan', x: 70, y: 57 },
   { id: 6, name: 'Ahamed', location: 'Thondi, Ramanathapuram', x: 67, y: 88 },
-  { id: 7, name: 'Dinesh', location: 'Coimbatore (div 1)', x: 18, y: 65 },
   { id: 8, name: 'Jaganraj', location: 'Attur', x: 55, y: 45 },
   { id: 9, name: 'JK Yashwanth Raj', location: 'Rajapalayam', x: 38, y: 98 },
   { id: 10, name: 'Karthick C', location: 'Hosur', x: 34, y: 12 },
@@ -26,10 +25,11 @@ const franchises = [
   { id: 20, name: 'Vasanth', location: 'Madurai (div 1)', x: 48, y: 85 },
   { id: 21, name: 'Vinothini', location: 'Lalgudi', x: 64, y: 65 },
   { id: 22, name: 'Eshwari', location: 'Mylapore, Chennai', x: 84, y: 15 },
-  { id: 23, name: 'Vignesh', location: 'Coimbatore (div 2)', x: 20, y: 68 },
+  { id: 23, name: 'Vignesh', location: 'Coimbatore', x: 20, y: 68 },
   { id: 24, name: 'Ramamoorthy', location: 'Madurai (div 2)', x: 50, y: 88 },
   { id: 25, name: 'M L Sanjeev', location: 'Ranipet', x: 72, y: 22 },
   { id: 26, name: 'Rasheed', location: 'Gingee (Villupuram)', x: 66, y: 38 },
+  { id: 27, name: 'Dr. Mohanraj', location: 'Thotiyam', x: 58, y: 63 },
 ];
 
 export default function FranchiseNetwork() {
