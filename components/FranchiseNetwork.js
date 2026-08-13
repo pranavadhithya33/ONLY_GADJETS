@@ -29,6 +29,7 @@ const franchises = [
   { id: 23, name: 'Vignesh', location: 'Coimbatore (div 2)', x: 20, y: 68 },
   { id: 24, name: 'Ramamoorthy', location: 'Madurai (div 2)', x: 50, y: 88 },
   { id: 25, name: 'M L Sanjeev', location: 'Ranipet', x: 72, y: 22 },
+  { id: 26, name: 'Rasheed', location: 'Gingee (Villupuram)', x: 66, y: 38 },
 ];
 
 export default function FranchiseNetwork() {
@@ -66,7 +67,7 @@ export default function FranchiseNetwork() {
           maxWidth: '500px',
           margin: '0 auto'
         }}>
-          25 premium Cash on Delivery hubs across Tamil Nadu. Empowering local business with Trillion-Dollar infrastructure.
+          {franchises.length} premium Cash on Delivery hubs across Tamil Nadu. Empowering local business with Trillion-Dollar infrastructure.
         </p>
       </div>
 
