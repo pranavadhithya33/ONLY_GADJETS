@@ -2,13 +2,12 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ShieldCheck } from 'lucide-react';
 
 export default function AdminLoginPage() {
-  const router = useRouter();
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const router = useRouter();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -24,7 +23,7 @@ export default function AdminLoginPage() {
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || 'Invalid password');
+        throw new Error(data.error || 'Failed to login');
       }
 
       if (data.token) {
@@ -34,7 +33,7 @@ export default function AdminLoginPage() {
 
       window.location.href = '/admin/dashboard';
     } catch (err) {
-      setError(err.message);
+      setError(err.message || 'Invalid password');
       setLoading(false);
     }
   };
@@ -45,79 +44,62 @@ export default function AdminLoginPage() {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      background: 'linear-gradient(135deg, #090d16 0%, #111827 100%)',
-      fontFamily: 'Inter, system-ui, sans-serif',
-      padding: '20px'
+      backgroundColor: '#0A0E1A',
+      padding: '16px',
+      fontFamily: 'Inter, system-ui, sans-serif'
     }}>
       <div style={{
-        background: '#1f2937',
-        border: '1px solid #374151',
-        borderRadius: '16px',
-        padding: '40px',
         width: '100%',
-        maxWidth: '420px',
-        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+        maxWidth: '440px',
+        padding: '32px',
+        backgroundColor: '#ffffff',
+        borderRadius: '24px',
+        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
       }}>
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '64px',
-            height: '64px',
-            borderRadius: '50%',
-            background: 'rgba(59, 130, 246, 0.1)',
-            color: '#3b82f6',
-            marginBottom: '16px'
+          <h1 style={{
+            fontSize: '28px',
+            fontWeight: '800',
+            color: '#111827',
+            marginBottom: '8px',
+            letterSpacing: '-0.025em'
           }}>
-            <ShieldCheck size={32} />
-          </div>
-          <h1 style={{ fontSize: '24px', fontWeight: '700', color: '#fff', margin: '0 0 8px 0' }}>
-            Admin Login
+            NEXT<span style={{ color: '#06b6d4' }}>ALL</span> Admin
           </h1>
-          <p style={{ fontSize: '14px', color: '#9ca3af', margin: 0 }}>
-            Enter security password to access control panel
+          <p style={{ fontSize: '14px', color: '#6b7280', margin: 0 }}>
+            Enter your password to access the dashboard
           </p>
         </div>
 
-        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div>
-            <label style={{
-              display: 'block',
-              fontSize: '13px',
-              fontWeight: '600',
-              color: '#d1d5db',
-              marginBottom: '8px'
-            }}>
-              Admin Password
-            </label>
             <input
               type="password"
-              placeholder="Enter password"
+              placeholder="Admin Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
               style={{
                 width: '100%',
-                padding: '12px 16px',
-                background: '#111827',
-                border: '1px solid #4b5563',
-                borderRadius: '10px',
-                color: '#fff',
-                fontSize: '15px',
+                fontSize: '16px',
+                padding: '16px',
+                borderRadius: '12px',
+                border: '1px solid #d1d5db',
                 outline: 'none',
-                boxSizing: 'border-box'
+                boxSizing: 'border-box',
+                color: '#111827',
+                backgroundColor: '#ffffff'
               }}
             />
           </div>
 
           {error && (
             <div style={{
-              background: 'rgba(239, 68, 68, 0.1)',
-              border: '1px solid #ef4444',
-              borderRadius: '8px',
-              padding: '12px',
-              color: '#f87171',
+              padding: '12px 16px',
+              backgroundColor: '#fef2f2',
+              border: '1px solid #fecaca',
+              borderRadius: '12px',
+              color: '#dc2626',
               fontSize: '14px',
               textAlign: 'center'
             }}>
@@ -129,19 +111,20 @@ export default function AdminLoginPage() {
             type="submit"
             disabled={loading}
             style={{
-              padding: '14px',
-              background: '#2563eb',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '10px',
+              width: '100%',
               fontSize: '16px',
-              fontWeight: '600',
+              fontWeight: '700',
+              padding: '16px',
+              borderRadius: '12px',
+              backgroundColor: '#F59E0B',
+              color: '#ffffff',
+              border: 'none',
               cursor: loading ? 'not-allowed' : 'pointer',
               opacity: loading ? 0.7 : 1,
-              transition: 'background 0.2s'
+              transition: 'background-color 0.2s'
             }}
           >
-            {loading ? 'Verifying...' : 'Access Dashboard →'}
+            {loading ? 'Logging in...' : 'Login to Dashboard'}
           </button>
         </form>
       </div>
