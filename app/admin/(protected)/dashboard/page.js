@@ -101,9 +101,9 @@ export default function AdminDashboard() {
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [orderForm, setOrderForm] = useState({
     fullName: '', phone: '', address: '', pincode: '',
-    productId: '', productName: '', productSlug: '',
+    productName: '', productSlug: 'offline',
     paymentOption: 'half_cod',
-    basePrice: 0, finalPrice: 0, advanceAmount: 0
+    finalPrice: '', advanceAmount: ''
   });
   const [orderSaving, setOrderSaving] = useState(false);
   const [orderError, setOrderError] = useState('');
@@ -641,38 +641,16 @@ export default function AdminDashboard() {
     console.log('Opening Add Order modal...');
     setOrderForm({
       fullName: '', phone: '', address: '', pincode: '',
-      productId: '', productName: '', productSlug: '',
+      productName: '', productSlug: 'offline',
       paymentOption: 'half_cod',
-      basePrice: 0, finalPrice: 0, advanceAmount: 0
+      finalPrice: '', advanceAmount: ''
     });
     setOrderError('');
     setShowOrderModal(true);
   };
 
   const handleOrderFormChange = (field, value) => {
-    setOrderForm(prev => {
-      const updated = { ...prev, [field]: value };
-      
-      // Auto-calculate if product or payment changes
-      if (field === 'productId') {
-        const product = products.find(p => p.id === value);
-        if (product) {
-          updated.productName = product.name;
-          updated.productSlug = product.slug || '';
-          updated.basePrice = product.our_price;
-          
-          const details = calcPaymentDetails(product.our_price, updated.paymentOption);
-          updated.finalPrice = details.finalPrice;
-          updated.advanceAmount = details.advance;
-        }
-      } else if (field === 'paymentOption' && updated.basePrice) {
-        const details = calcPaymentDetails(updated.basePrice, value);
-        updated.finalPrice = details.finalPrice;
-        updated.advanceAmount = details.advance;
-      }
-      
-      return updated;
-    });
+    setOrderForm(prev => ({ ...prev, [field]: value }));
   };
 
   const handleBulkHide = async () => {
@@ -745,8 +723,30 @@ export default function AdminDashboard() {
 
   const handleOrderSave = async () => {
     const { fullName, phone, address, pincode, productName, finalPrice } = orderForm;
-    if (!fullName || !phone || !address || !pincode || !productName || !finalPrice) {
-      setOrderError('All fields are required');
+    if (!productName?.trim()) {
+      setOrderError('Product Name / Phone Model is required');
+      return;
+    }
+    if (!fullName?.trim()) {
+      setOrderError('Customer Name is required');
+      return;
+    }
+    if (!phone || phone.length < 10) {
+      setOrderError('Valid 10-digit Phone Number is required');
+      return;
+    }
+    if (!address?.trim()) {
+      setOrderError('Delivery Address is required');
+      return;
+    }
+    const cleanPincode = (pincode || '').trim() || '600001';
+    if (!/^[1-9][0-9]{5}$/.test(cleanPincode)) {
+      setOrderError('Pincode must be 6 digits (e.g. 600001)');
+      return;
+    }
+    const priceNum = Number(finalPrice);
+    if (!finalPrice || isNaN(priceNum) || priceNum <= 0) {
+      setOrderError('Please enter a valid price');
       return;
     }
 
@@ -757,18 +757,18 @@ export default function AdminDashboard() {
         method: 'POST',
         headers: getAdminHeaders(),
         body: JSON.stringify({
-          full_name: fullName,
-          phone,
-          address,
-          pincode,
-          product_id: orderForm.productId || null,
-          product_name: productName,
+          full_name: fullName.trim(),
+          phone: phone.trim(),
+          address: address.trim(),
+          pincode: cleanPincode,
+          product_id: null,
+          product_name: productName.trim(),
           product_slug: orderForm.productSlug || 'offline',
-          payment_option: orderForm.paymentOption,
-          base_price: orderForm.basePrice,
-          discount_amount: orderForm.basePrice - orderForm.finalPrice,
-          final_price: orderForm.finalPrice,
-          advance_amount: orderForm.advanceAmount,
+          payment_option: orderForm.paymentOption || 'half_cod',
+          base_price: priceNum,
+          discount_amount: 0,
+          final_price: priceNum,
+          advance_amount: Number(orderForm.advanceAmount) || 0,
           status: 'confirmed', // Offline orders usually confirmed
           current_step: 1
         }),
@@ -1110,107 +1110,108 @@ export default function AdminDashboard() {
             </h2>
 
             <div className={styles.modalForm}>
+              {/* Product Name / Phone Model */}
               <div className="form-group">
-                <label className="form-label">Select Product *</label>
-                <select 
+                <label className="form-label">Product Name / Phone Model *</label>
+                <input 
+                  type="text" 
                   className="form-input" 
-                  value={orderForm.productId}
-                  onChange={(e) => handleOrderFormChange('productId', e.target.value)}
-                >
-                  <option value="">-- Choose Product --</option>
+                  placeholder="Type product name or phone model manually (e.g. iPhone 15 Pro)"
+                  list="products-suggestions"
+                  value={orderForm.productName}
+                  onChange={(e) => handleOrderFormChange('productName', e.target.value)}
+                />
+                <datalist id="products-suggestions">
                   {products.map(p => (
-                    <option key={p.id} value={p.id}>{p.name} - {formatINR(p.our_price)}</option>
+                    <option key={p.id} value={p.name} />
                   ))}
-                  <option value="custom">-- Custom Item --</option>
-                </select>
+                </datalist>
               </div>
 
-              {orderForm.productId === 'custom' && (
-                <div className="form-group">
-                  <label className="form-label">Item Name *</label>
-                  <input 
-                    type="text" 
-                    className="form-input" 
-                    placeholder="Enter custom item name"
-                    value={orderForm.productName}
-                    onChange={(e) => handleOrderFormChange('productName', e.target.value)}
-                  />
-                </div>
-              )}
-
+              {/* Customer Name & Phone */}
               <div className={styles.formGrid}>
                 <div className="form-group">
                   <label className="form-label">Customer Name *</label>
                   <input 
                     type="text" 
                     className="form-input" 
+                    placeholder="Enter customer name"
                     value={orderForm.fullName}
                     onChange={(e) => handleOrderFormChange('fullName', e.target.value)}
                   />
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Phone *</label>
+                  <label className="form-label">Phone Number *</label>
                   <input 
                     type="tel" 
                     className="form-input" 
                     maxLength={10}
+                    placeholder="10-digit mobile number"
                     value={orderForm.phone}
                     onChange={(e) => handleOrderFormChange('phone', e.target.value.replace(/\D/g, ''))}
                   />
                 </div>
               </div>
 
+              {/* Delivery Address */}
               <div className="form-group">
                 <label className="form-label">Delivery Address *</label>
                 <textarea 
                   className={styles.formTextarea} 
                   rows={2}
+                  placeholder="Enter complete delivery address"
                   value={orderForm.address}
                   onChange={(e) => handleOrderFormChange('address', e.target.value)}
                 />
               </div>
 
-              <div className="form-group">
-                <label className="form-label">Pincode *</label>
-                <input 
-                  type="text" 
-                  className="form-input" 
-                  maxLength={6}
-                  value={orderForm.pincode}
-                  onChange={(e) => handleOrderFormChange('pincode', e.target.value.replace(/\D/g, ''))}
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Payment Method *</label>
-                <select 
-                  className="form-input"
-                  value={orderForm.paymentOption}
-                  onChange={(e) => handleOrderFormChange('paymentOption', e.target.value)}
-                >
-                  <option value="half_cod">Half COD (50% Advance)</option>
-                  <option value="full_prepaid">Full Prepaid</option>
-                  <option value="token_advance">Token Advance (30%)</option>
-                </select>
-              </div>
-
+              {/* Pincode & Payment Option */}
               <div className={styles.formGrid}>
                 <div className="form-group">
-                  <label className="form-label">Final Price (₹) *</label>
+                  <label className="form-label">Pincode *</label>
                   <input 
-                    type="number" 
+                    type="text" 
                     className="form-input" 
-                    value={orderForm.finalPrice}
-                    onChange={(e) => handleOrderFormChange('finalPrice', Number(e.target.value))}
+                    maxLength={6}
+                    placeholder="6-digit pincode"
+                    value={orderForm.pincode}
+                    onChange={(e) => handleOrderFormChange('pincode', e.target.value.replace(/\D/g, ''))}
                   />
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Advance (₹)</label>
+                  <label className="form-label">Payment Method *</label>
+                  <select 
+                    className="form-input"
+                    value={orderForm.paymentOption}
+                    onChange={(e) => handleOrderFormChange('paymentOption', e.target.value)}
+                  >
+                    <option value="half_cod">Half COD (50% Advance)</option>
+                    <option value="full_prepaid">Full Prepaid</option>
+                    <option value="token_advance">Token Advance (30%)</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Product Price & Advance Amount */}
+              <div className={styles.formGrid}>
+                <div className="form-group">
+                  <label className="form-label">Product Price (₹) *</label>
                   <input 
                     type="number" 
                     className="form-input" 
+                    placeholder="Enter price manually"
+                    value={orderForm.finalPrice}
+                    onChange={(e) => handleOrderFormChange('finalPrice', e.target.value)}
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Advance Paid (₹)</label>
+                  <input 
+                    type="number" 
+                    className="form-input" 
+                    placeholder="Enter advance amount"
                     value={orderForm.advanceAmount}
-                    onChange={(e) => handleOrderFormChange('advanceAmount', Number(e.target.value))}
+                    onChange={(e) => handleOrderFormChange('advanceAmount', e.target.value)}
                   />
                 </div>
               </div>
