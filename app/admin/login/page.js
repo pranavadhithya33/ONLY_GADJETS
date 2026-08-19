@@ -27,8 +27,12 @@ export default function AdminLoginPage() {
         throw new Error(data.error || 'Invalid password');
       }
 
-      router.push('/admin/dashboard');
-      router.refresh();
+      if (data.token) {
+        localStorage.setItem('admin_token', data.token);
+        document.cookie = `admin_token=${data.token}; path=/; max-age=604800; SameSite=Lax`;
+      }
+
+      window.location.href = '/admin/dashboard';
     } catch (err) {
       setError(err.message);
       setLoading(false);
