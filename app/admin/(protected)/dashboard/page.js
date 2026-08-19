@@ -1110,22 +1110,16 @@ export default function AdminDashboard() {
             </h2>
 
             <div className={styles.modalForm}>
-              {/* Product Name / Phone Model */}
+              {/* Product Name / Model */}
               <div className="form-group">
-                <label className="form-label">Product Name / Phone Model *</label>
+                <label className="form-label">Product Name / Model *</label>
                 <input 
                   type="text" 
                   className="form-input" 
-                  placeholder="Type product name or phone model manually (e.g. iPhone 15 Pro)"
-                  list="products-suggestions"
+                  placeholder="Type product name or phone model manually"
                   value={orderForm.productName}
                   onChange={(e) => handleOrderFormChange('productName', e.target.value)}
                 />
-                <datalist id="products-suggestions">
-                  {products.map(p => (
-                    <option key={p.id} value={p.name} />
-                  ))}
-                </datalist>
               </div>
 
               {/* Customer Name & Phone */}
@@ -1135,7 +1129,7 @@ export default function AdminDashboard() {
                   <input 
                     type="text" 
                     className="form-input" 
-                    placeholder="Enter customer name"
+                    placeholder="Type customer name"
                     value={orderForm.fullName}
                     onChange={(e) => handleOrderFormChange('fullName', e.target.value)}
                   />
@@ -1146,7 +1140,7 @@ export default function AdminDashboard() {
                     type="tel" 
                     className="form-input" 
                     maxLength={10}
-                    placeholder="10-digit mobile number"
+                    placeholder="Type 10-digit mobile number"
                     value={orderForm.phone}
                     onChange={(e) => handleOrderFormChange('phone', e.target.value.replace(/\D/g, ''))}
                   />
@@ -1159,59 +1153,33 @@ export default function AdminDashboard() {
                 <textarea 
                   className={styles.formTextarea} 
                   rows={2}
-                  placeholder="Enter complete delivery address"
+                  placeholder="Type complete delivery address"
                   value={orderForm.address}
                   onChange={(e) => handleOrderFormChange('address', e.target.value)}
                 />
               </div>
 
-              {/* Pincode & Payment Option */}
+              {/* Product Price & Advance */}
               <div className={styles.formGrid}>
                 <div className="form-group">
-                  <label className="form-label">Pincode *</label>
-                  <input 
-                    type="text" 
-                    className="form-input" 
-                    maxLength={6}
-                    placeholder="6-digit pincode"
-                    value={orderForm.pincode}
-                    onChange={(e) => handleOrderFormChange('pincode', e.target.value.replace(/\D/g, ''))}
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Payment Method *</label>
-                  <select 
-                    className="form-input"
-                    value={orderForm.paymentOption}
-                    onChange={(e) => handleOrderFormChange('paymentOption', e.target.value)}
-                  >
-                    <option value="half_cod">Half COD (50% Advance)</option>
-                    <option value="full_prepaid">Full Prepaid</option>
-                    <option value="token_advance">Token Advance (30%)</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Product Price & Advance Amount */}
-              <div className={styles.formGrid}>
-                <div className="form-group">
-                  <label className="form-label">Product Price (₹) *</label>
+                  <label className="form-label">Price (₹) *</label>
                   <input 
                     type="number" 
                     className="form-input" 
-                    placeholder="Enter price manually"
+                    placeholder="Type product price manually"
                     value={orderForm.finalPrice}
                     onChange={(e) => handleOrderFormChange('finalPrice', e.target.value)}
                   />
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Advance Paid (₹)</label>
+                  <label className="form-label">Pincode (Optional)</label>
                   <input 
-                    type="number" 
+                    type="text" 
                     className="form-input" 
-                    placeholder="Enter advance amount"
-                    value={orderForm.advanceAmount}
-                    onChange={(e) => handleOrderFormChange('advanceAmount', e.target.value)}
+                    maxLength={6}
+                    placeholder="Pincode (default 600001)"
+                    value={orderForm.pincode}
+                    onChange={(e) => handleOrderFormChange('pincode', e.target.value.replace(/\D/g, ''))}
                   />
                 </div>
               </div>
@@ -1221,7 +1189,7 @@ export default function AdminDashboard() {
               <div className={styles.modalActions}>
                 <button type="button" className={styles.modalCancelBtn} onClick={() => setShowOrderModal(false)}>Cancel</button>
                 <button type="button" className={styles.modalSaveBtn} onClick={handleOrderSave} disabled={orderSaving}>
-                  {orderSaving ? 'Creating...' : '✓ Create Order'}
+                  {orderSaving ? 'Creating Order...' : '✓ Create Order'}
                 </button>
               </div>
             </div>
