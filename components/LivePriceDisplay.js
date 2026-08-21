@@ -1,46 +1,54 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { formatINR } from '@/lib/utils';
 import styles from '@/styles/LivePrice.module.css';
 
 export default function LivePriceDisplay({ product, onPriceUpdate, onStockUpdate }) {
-  const [prices, setPrices] = useState({
-    amazon: product.amazon_price || product.online_price || 0,
-    flipkart: product.flipkart_price || product.online_price || 0,
-  });
-  const [isLoading, setIsLoading] = useState(true);
+  const amazonPrice = Number(product.amazon_price) || 0;
+  const flipkartPrice = Number(product.flipkart_price) || 0;
+  const onlinePrice = Number(product.online_price) || 0;
+  const adminOurPrice = Number(product.our_price) || 0;
 
-  useEffect(() => {
-    // Use stored product prices from database (updated via admin / periodic sync)
-    setPrices({
-      amazon: product.amazon_price || product.online_price || 0,
-      flipkart: product.flipkart_price || product.online_price || 0,
-    });
-    setIsLoading(false);
-  }, [product.amazon_price, product.flipkart_price, product.online_price]);
-
-  // Determine highest competitor price to calculate maximum savings
-  const maxCompetitorPrice = Math.max(prices.amazon, prices.flipkart);
-  const calculatedOurPrice = maxCompetitorPrice > 0 ? Math.round(maxCompetitorPrice * 0.9) : product.our_price;
+  // Maximum competitor/market price to show comparison
+  const maxCompetitorPrice = Math.max(amazonPrice, flipkartPrice, onlinePrice);
   
-  useEffect(() => {
-    if (onPriceUpdate && calculatedOurPrice !== product.our_price) {
-      onPriceUpdate(calculatedOurPrice);
-    }
-  }, [calculatedOurPrice, product.our_price, onPriceUpdate]);
+  // Use admin's custom our_price if set (> 0), otherwise fallback to 10% off market price
+  const displayOurPrice = adminOurPrice > 0 
+    ? adminOurPrice 
+    : (maxCompetitorPrice > 0 ? Math.round(maxCompetitorPrice * 0.9) : 0);
 
-  const savings = maxCompetitorPrice > calculatedOurPrice ? maxCompetitorPrice - calculatedOurPrice : 0;
-  const savingsPercent = 10; // Forced to 10% by new rule
+  useEffect(() => {
+    if (onPriceUpdate && displayOurPrice > 0) {
+      onPriceUpdate(displayOurPrice);
+    }
+  }, [displayOurPrice, onPriceUpdate]);
+
+  const savings = maxCompetitorPrice > displayOurPrice ? maxCompetitorPrice - displayOurPrice : 0;
+  const savingsPercent = maxCompetitorPrice > 0 && savings > 0 
+    ? Math.round((savings / maxCompetitorPrice) * 100) 
+    : 0;
 
   return (
     <div className={styles.container}>
       <div className={styles.pricesRow}>
-        <div className={styles.competitorPrices}>
-          {maxCompetitorPrice > 0 && (
+        <div className={styles.competitorPrices} style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
+          {amazonPrice > 0 && (
             <div className={styles.compPriceItem}>
-              <span className={styles.compLabel}>Online Price:</span>
-              <span className={styles.strikethrough}>{formatINR(maxCompetitorPrice)}</span>
+              <span className={styles.compLabel}>Amazon Price:</span>
+              <span className={styles.strikethrough}>{formatINR(amazonPrice)}</span>
+            </div>
+          )}
+          {flipkartPrice > 0 && (
+            <div className={styles.compPriceItem}>
+              <span className={styles.compLabel}>Flipkart Price:</span>
+              <span className={styles.strikethrough}>{formatINR(flipkartPrice)}</span>
+            </div>
+          )}
+          {onlinePrice > 0 && (
+            <div className={styles.compPriceItem}>
+              <span className={styles.compLabel}>Online MRP:</span>
+              <span className={styles.strikethrough}>{formatINR(onlinePrice)}</span>
             </div>
           )}
         </div>
@@ -49,7 +57,7 @@ export default function LivePriceDisplay({ product, onPriceUpdate, onStockUpdate
       <div className={styles.ourPriceBox}>
         <div className={styles.ourPriceLabel}>Our Wholesale Price</div>
         <div className={styles.ourPriceValue}>
-          {formatINR(calculatedOurPrice)}
+          {formatINR(displayOurPrice)}
           {savingsPercent > 0 && (
             <span className={styles.discountBadge}>-{savingsPercent}%</span>
           )}
@@ -62,12 +70,9 @@ export default function LivePriceDisplay({ product, onPriceUpdate, onStockUpdate
         )}
       </div>
       
-      {isLoading && (
-        <div className={styles.loadingText}>Fetching live market prices...</div>
-      )}
-      {!isLoading && (product.amazon_url || product.flipkart_url) && (
+      {(product.amazon_url || product.flipkart_url) && (
         <div className={styles.liveIndicator}>
-          <span className={styles.liveDot}></span> Live Prices Updated
+          <span className={styles.liveDot}></span> Market Prices Synced
         </div>
       )}
     </div>

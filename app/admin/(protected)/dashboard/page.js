@@ -925,9 +925,9 @@ export default function AdminDashboard() {
                           setForm(prev => ({
                             ...prev,
                             name: data.product.name,
-                            amazon_price: data.product.flipkart_price || data.product.amazon_price,
-                            online_price: data.product.flipkart_price || data.product.amazon_price,
-                            our_price: data.product.our_price,
+                            flipkart_price: data.product.flipkart_price || prev.flipkart_price,
+                            online_price: data.product.flipkart_price || prev.online_price,
+                            our_price: data.product.our_price || prev.our_price,
                             description: data.product.description,
                             images: data.product.images?.length ? data.product.images : prev.images,
                             stock: data.product.stock
