@@ -49,7 +49,7 @@ export default function Header() {
       .from('profiles')
       .select('coins_balance')
       .eq('id', userId)
-      .single();
+      .maybeSingle();
     if (data) setCoins(data.coins_balance || 0);
   };
 

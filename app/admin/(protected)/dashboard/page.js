@@ -507,11 +507,15 @@ export default function AdminDashboard() {
       // Save variants
       const productId = data.id || editProduct?.id;
       if (productId && form.variants?.length) {
-        await fetch(`/api/products/${productId}/variants`, {
+        const varRes = await fetch(`/api/products/${productId}/variants`, {
           method: 'POST',
           headers: getAdminHeaders(),
           body: JSON.stringify({ variants: form.variants }),
         });
+        const varData = await varRes.json().catch(() => ({}));
+        if (!varRes.ok) {
+          throw new Error(varData.error || 'Failed to save variants');
+        }
       }
 
       await fetchProducts();

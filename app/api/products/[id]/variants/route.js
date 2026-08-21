@@ -19,7 +19,7 @@ export async function GET(req, { params }) {
         .from('products')
         .select('id')
         .eq('slug', id)
-        .single();
+        .maybeSingle();
       if (error || !product) return NextResponse.json([], { status: 200 });
       productId = product.id;
     }
@@ -74,7 +74,7 @@ export async function POST(req, { params }) {
         .from('products')
         .select('id')
         .eq('slug', id)
-        .single();
+        .maybeSingle();
       if (error || !product) return NextResponse.json({ error: 'Product not found' }, { status: 404 });
       productId = product.id;
     }

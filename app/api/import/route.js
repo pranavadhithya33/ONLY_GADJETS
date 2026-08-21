@@ -30,7 +30,7 @@ export async function POST(request) {
       .from('products')
       .select('id')
       .eq('slug', scrapedData.slug)
-      .single();
+      .maybeSingle();
 
     if (existing) {
       scrapedData.slug = `${scrapedData.slug}-${Date.now()}`;
@@ -40,7 +40,7 @@ export async function POST(request) {
       .from('products')
       .insert(scrapedData)
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) throw new Error(error.message);
 

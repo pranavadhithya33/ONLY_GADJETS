@@ -83,7 +83,7 @@ export async function POST(req) {
         prepaid_discount_pct: Number(prepaid_discount_pct) || 3
       }])
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
     return NextResponse.json(data, { status: 201 });

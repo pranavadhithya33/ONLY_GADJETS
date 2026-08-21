@@ -9,8 +9,8 @@ export async function GET(req, { params }) {
     // Support both numeric id and slug
     const isUUID = /^[0-9a-f-]{36}$/.test(id);
     const query = isUUID
-      ? supabase.from('products').select('*').eq('id', id).single()
-      : supabase.from('products').select('*').eq('slug', id).single();
+      ? supabase.from('products').select('*').eq('id', id).maybeSingle()
+      : supabase.from('products').select('*').eq('slug', id).maybeSingle();
 
     const { data, error } = await query;
     if (error || !data) return NextResponse.json({ error: 'Product not found' }, { status: 404 });
@@ -44,14 +44,15 @@ export async function PUT(req, { params }) {
     updateData.stock = 10;
 
     const adminSupabase = createAdminClient();
-    const { data, error } = await adminSupabase
-      .from('products')
-      .update(updateData)
-      .eq('id', id)
-      .select()
-      .single();
+    const isUUID = /^[0-9a-f-]{36}$/.test(id);
+    const { data, error } = await (
+      isUUID
+        ? adminSupabase.from('products').update(updateData).eq('id', id)
+        : adminSupabase.from('products').update(updateData).eq('slug', id)
+    ).select().maybeSingle();
 
     if (error) throw error;
+    if (!data) return NextResponse.json({ error: 'Product not found' }, { status: 404 });
     return NextResponse.json(data);
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });
