@@ -6,6 +6,7 @@ import { X } from 'lucide-react';
 
 export default function VideoModal({ video, onClose }) {
   const modalRef = useRef(null);
+  const videoRef = useRef(null);
 
   // Close on Escape key
   useEffect(() => {
@@ -16,11 +17,16 @@ export default function VideoModal({ video, onClose }) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onClose]);
 
-  // Prevent background scrolling
+  // Prevent background scrolling and ensure video stops playing when closed
   useEffect(() => {
     document.body.style.overflow = 'hidden';
     return () => {
       document.body.style.overflow = 'unset';
+      if (videoRef.current) {
+        videoRef.current.pause();
+        videoRef.current.src = '';
+        videoRef.current.load();
+      }
     };
   }, []);
 
@@ -32,17 +38,20 @@ export default function VideoModal({ video, onClose }) {
 
   return (
     <div className={styles.modalBackdrop} ref={modalRef} onClick={handleBackdropClick}>
-      <button className={styles.closeButton} onClick={onClose}>
+      <button className={styles.closeButton} onClick={onClose} aria-label="Close video">
         <X size={28} />
       </button>
       
       <div className={styles.modalContent}>
         <video 
+          ref={videoRef}
           className={styles.modalVideo}
           src={video.url}
           controls
           autoPlay
           playsInline
+          preload="metadata"
+          controlsList="nodownload"
         />
         <div className={styles.modalInfo}>
           <p className={styles.modalCustomerName}>{video.customer_name}</p>

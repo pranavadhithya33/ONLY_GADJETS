@@ -19,7 +19,11 @@ export async function GET(req, { params }) {
     const marketPrice = Math.max(data.amazon_price || 0, data.flipkart_price || 0, data.online_price || 0);
     const enriched = { ...data, market_price: marketPrice, stock: 10 };
 
-    return NextResponse.json(enriched);
+    return NextResponse.json(enriched, {
+      headers: {
+        'Cache-Control': 'public, max-age=60, s-maxage=60, stale-while-revalidate=300',
+      }
+    });
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }

@@ -55,7 +55,11 @@ export async function GET(req) {
       return { ...v, thumbnail_url: thumb || '/videos/thumbnails/4.jpg' };
     });
     
-    return NextResponse.json(enrichedData);
+    return NextResponse.json(enrichedData, {
+      headers: {
+        'Cache-Control': 'public, max-age=300, s-maxage=300, stale-while-revalidate=600',
+      }
+    });
   } catch (err) {
     return NextResponse.json(adminMode ? FALLBACK_VIDEOS : FALLBACK_VIDEOS.filter(v => v.active));
   }

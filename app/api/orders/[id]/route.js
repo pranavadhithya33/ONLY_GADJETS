@@ -8,44 +8,31 @@ export async function GET(req, context) {
     const { id } = await context.params;
     const adminSupabase = createAdminClient();
     
-    // First attempt: Exact match
-    let { data, error } = await adminSupabase
-      .from('orders')
-      .select('*')
-      .eq('id', id)
-      .maybeSingle();
-
-    // Second attempt: Short ID match (if id is 8 chars long)
-    if (!data && id.length === 8) {
+    let data = null;
+    if (id.length === 8) {
       const searchId = id.toLowerCase();
-      const { data: list, error: searchError } = await adminSupabase
-        .from('orders')
-        .select('*')
-        .filter('id', 'ilike', `${searchId}%`)
-        .limit(1);
-      
-      if (!searchError && list && list.length > 0) {
-        data = list[0];
-      }
-    }
-
-    // Third attempt: If ilike fails on UUID (depends on Supabase version), use range
-    if (!data && id.length === 8) {
-      const searchId = id.toLowerCase();
-      const { data: list, error: searchError } = await adminSupabase
+      const { data: list } = await adminSupabase
         .from('orders')
         .select('*')
         .gte('id', `${searchId}-0000-0000-0000-000000000000`)
         .lte('id', `${searchId}-ffff-ffff-ffff-ffffffffffff`)
         .limit(1);
-      
-      if (!searchError && list && list.length > 0) {
-        data = list[0];
-      }
+      if (list && list.length > 0) data = list[0];
+    } else {
+      const { data: singleOrder } = await adminSupabase
+        .from('orders')
+        .select('*')
+        .eq('id', id)
+        .maybeSingle();
+      data = singleOrder;
     }
 
     if (!data) return NextResponse.json({ error: 'Order not found' }, { status: 404 });
-    return NextResponse.json(data);
+    return NextResponse.json(data, {
+      headers: {
+        'Cache-Control': 'public, max-age=10, s-maxage=10, stale-while-revalidate=30',
+      }
+    });
   } catch (err) {
     console.error('Order fetch error:', err);
     return NextResponse.json({ error: 'Failed to fetch order details' }, { status: 500 });

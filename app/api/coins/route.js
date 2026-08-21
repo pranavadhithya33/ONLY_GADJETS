@@ -17,7 +17,11 @@ export async function GET(req) {
       .single();
 
     if (error) return NextResponse.json({ coins_balance: 0 });
-    return NextResponse.json({ coins_balance: data.coins_balance || 0, name: data.name });
+    return NextResponse.json({ coins_balance: data.coins_balance || 0, name: data.name }, {
+      headers: {
+        'Cache-Control': 'private, max-age=10, s-maxage=10',
+      }
+    });
   } catch (err) {
     return NextResponse.json({ coins_balance: 0 });
   }

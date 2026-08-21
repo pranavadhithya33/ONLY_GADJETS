@@ -86,7 +86,12 @@ export async function GET(req) {
       return NextResponse.json(MOCK_REVIEWS);
     }
 
-    return NextResponse.json(data && data.length > 0 ? data : MOCK_REVIEWS);
+    const responseData = data && data.length > 0 ? data : MOCK_REVIEWS;
+    return NextResponse.json(responseData, {
+      headers: {
+        'Cache-Control': 'public, max-age=60, s-maxage=60, stale-while-revalidate=300',
+      }
+    });
   } catch (err) {
     console.error('Reviews GET error, returning mock reviews:', err);
     return NextResponse.json(MOCK_REVIEWS, { status: 200 });

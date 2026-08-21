@@ -121,19 +121,30 @@ function HomeContent() {
     setActiveCategory(categoryFilter);
   }, [categoryFilter]);
 
+  // Fetch static page data (categories & videos) once on mount
   useEffect(() => {
-    setLoading(true);
-    const fetchProducts = fetch(activeCategory ? `/api/products?category=${encodeURIComponent(activeCategory)}` : '/api/products').then(r => r.json());
-    const fetchCategories = fetch('/api/categories').then(r => r.json());
-    const fetchVideos = fetch('/api/videos').then(r => r.json()).catch(() => []);
-
-    Promise.all([fetchProducts, fetchCategories, fetchVideos])
-      .then(([prodData, catData, vidData]) => {
-        setProducts(prodData || []);
+    fetch('/api/categories')
+      .then(r => r.json())
+      .then(catData => {
         const excludedSlugs = ['smartphones', 'tablets', 'tablet', 'accessories'];
         const filteredCats = (catData || []).filter(c => !excludedSlugs.includes(c.slug.toLowerCase()));
         setCategories(filteredCats);
-        setVideos(vidData || []);
+      })
+      .catch(() => {});
+
+    fetch('/api/videos')
+      .then(r => r.json())
+      .then(vidData => setVideos(vidData || []))
+      .catch(() => {});
+  }, []);
+
+  // Fetch products when activeCategory changes
+  useEffect(() => {
+    setLoading(true);
+    fetch(activeCategory ? `/api/products?category=${encodeURIComponent(activeCategory)}` : '/api/products')
+      .then(r => r.json())
+      .then(prodData => {
+        setProducts(prodData || []);
         setLoading(false);
       })
       .catch(() => setLoading(false));

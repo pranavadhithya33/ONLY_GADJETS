@@ -26,6 +26,7 @@ export default function ProductCard({ product }) {
             alt={product.name}
             className={styles.image}
             loading="lazy"
+            decoding="async"
             referrerPolicy="no-referrer"
           />
         ) : (

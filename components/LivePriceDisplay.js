@@ -12,58 +12,13 @@ export default function LivePriceDisplay({ product, onPriceUpdate, onStockUpdate
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    let isMounted = true;
-    
-    async function fetchLivePrices() {
-      const newPrices = { ...prices };
-      let changed = false;
-
-      // Try Amazon
-      if (product.amazon_url) {
-        try {
-          const res = await fetch(`/api/price?url=${encodeURIComponent(product.amazon_url)}`);
-          const data = await res.json();
-          if (data.price && data.price > 0 && isMounted) {
-            newPrices.amazon = data.price;
-            changed = true;
-          }
-          if (data.outOfStock && isMounted) {
-            if (onStockUpdate) onStockUpdate(false);
-          }
-        } catch (e) {
-          console.error('Failed to fetch Amazon price');
-        }
-      }
-
-      // Try Flipkart
-      if (product.flipkart_url) {
-        try {
-          const res = await fetch(`/api/price?url=${encodeURIComponent(product.flipkart_url)}`);
-          const data = await res.json();
-          if (data.price && data.price > 0 && isMounted) {
-            newPrices.flipkart = data.price;
-            changed = true;
-          }
-        } catch (e) {
-          console.error('Failed to fetch Flipkart price');
-        }
-      }
-
-      if (changed && isMounted) {
-        setPrices(newPrices);
-      }
-      if (isMounted) setIsLoading(false);
-    }
-
-    // Only try to fetch live prices if URLs are provided, otherwise just use DB prices immediately
-    if (product.amazon_url || product.flipkart_url) {
-      fetchLivePrices();
-    } else {
-      setIsLoading(false);
-    }
-
-    return () => { isMounted = false; };
-  }, [product.amazon_url, product.flipkart_url]);
+    // Use stored product prices from database (updated via admin / periodic sync)
+    setPrices({
+      amazon: product.amazon_price || product.online_price || 0,
+      flipkart: product.flipkart_price || product.online_price || 0,
+    });
+    setIsLoading(false);
+  }, [product.amazon_price, product.flipkart_price, product.online_price]);
 
   // Determine highest competitor price to calculate maximum savings
   const maxCompetitorPrice = Math.max(prices.amazon, prices.flipkart);

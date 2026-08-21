@@ -31,9 +31,7 @@ export async function GET() {
     const isActive = claimed < GIVEAWAY_LIMIT;
 
     const headers = {
-      'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
-      'CDN-Cache-Control': 'no-store',
-      'Vercel-CDN-Cache-Control': 'no-store',
+      'Cache-Control': 'public, max-age=60, s-maxage=60, stale-while-revalidate=300',
     };
 
     return NextResponse.json({

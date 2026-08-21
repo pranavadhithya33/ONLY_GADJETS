@@ -65,7 +65,11 @@ export async function GET(request) {
       return NextResponse.json({ price: null, error: 'Failed to parse price' });
     }
 
-    return NextResponse.json({ price: numericPrice, outOfStock });
+    return NextResponse.json({ price: numericPrice, outOfStock }, {
+      headers: {
+        'Cache-Control': 'public, max-age=86400, s-maxage=86400, stale-while-revalidate=604800',
+      }
+    });
 
   } catch (error) {
     console.error('Scraping error:', error);

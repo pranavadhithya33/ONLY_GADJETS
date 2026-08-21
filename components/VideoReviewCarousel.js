@@ -45,6 +45,7 @@ export default function VideoReviewCarousel({ videos }) {
                 src={video.thumbnail_url || (video.url && video.url.startsWith('/videos/') ? `/videos/thumbnails/${video.url.split('/').pop().replace(/\.(mp4|webm|mov)$/i, '.jpg')}` : '/videos/thumbnails/4.jpg')} 
                 alt={`Review by ${video.customer_name || 'Customer'}`}
                 loading="lazy" 
+                decoding="async"
               />
               
               <div className={styles.overlay}>

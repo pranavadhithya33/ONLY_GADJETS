@@ -72,8 +72,6 @@ export async function GET(request) {
         results.inserted++;
       }
       
-      // Small delay to avoid aggressive scraping detection
-      await new Promise(resolve => setTimeout(resolve, 2000));
       
     } catch (error) {
       console.error(`Error processing ${item.url}:`, error.message);

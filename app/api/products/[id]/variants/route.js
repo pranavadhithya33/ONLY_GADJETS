@@ -38,7 +38,11 @@ export async function GET(req, { params }) {
     const { data, error } = await query;
     if (error) throw error;
 
-    return NextResponse.json(data || []);
+    return NextResponse.json(data || [], {
+      headers: {
+        'Cache-Control': all ? 'no-store' : 'public, max-age=60, s-maxage=60, stale-while-revalidate=300',
+      }
+    });
   } catch (err) {
     console.error('Variants GET error:', err);
     return NextResponse.json([], { status: 200 });

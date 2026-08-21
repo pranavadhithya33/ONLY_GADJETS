@@ -39,7 +39,11 @@ export async function GET(req) {
       return { ...p, market_price: marketPrice };
     });
 
-    return NextResponse.json(enriched);
+    return NextResponse.json(enriched, {
+      headers: {
+        'Cache-Control': 'public, max-age=60, s-maxage=60, stale-while-revalidate=300',
+      }
+    });
   } catch (err) {
     console.error('Products fetch error:', err);
     return NextResponse.json([], { status: 200 });

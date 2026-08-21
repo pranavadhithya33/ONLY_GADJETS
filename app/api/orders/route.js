@@ -112,23 +112,27 @@ export async function POST(req) {
           // Calculate new balance
           const newBalance = Math.max(0, currentBalance - redeemedAmount + earnedCoins);
           
-          // 2. Record transactions
+          // 2. Record transactions concurrently
+          const txPromises = [];
           if (redeemedAmount > 0) {
-            await adminSupabase.from('coin_transactions').insert({
+            txPromises.push(adminSupabase.from('coin_transactions').insert({
               user_id: userId,
               order_id: data.id,
               coins_redeemed: redeemedAmount,
               description: `Redeemed on order #${data.id.slice(0,8).toUpperCase()}`
-            });
+            }));
           }
           
           if (earnedCoins > 0) {
-            await adminSupabase.from('coin_transactions').insert({
+            txPromises.push(adminSupabase.from('coin_transactions').insert({
               user_id: userId,
               order_id: data.id,
               coins_earned: earnedCoins,
               description: `Earned from order #${data.id.slice(0,8).toUpperCase()}`
-            });
+            }));
+          }
+          if (txPromises.length > 0) {
+            await Promise.all(txPromises);
           }
           
           // 3. Final update to profile (SINGLE UPDATE)

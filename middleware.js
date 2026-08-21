@@ -11,7 +11,11 @@ export async function middleware(request) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  if (supabaseUrl && supabaseAnonKey) {
+  // Only execute Supabase auth check if auth cookies exist or route is protected
+  const hasAuthCookie = request.cookies.getAll().some(c => c.name.includes('sb-') || c.name.includes('auth'));
+  const isUserProtected = request.nextUrl.pathname.startsWith('/profile') || request.nextUrl.pathname.startsWith('/account');
+
+  if (supabaseUrl && supabaseAnonKey && (hasAuthCookie || isUserProtected)) {
     try {
       const supabase = createServerClient(
         supabaseUrl,
