@@ -30,6 +30,8 @@ const franchises = [
   { id: 25, name: 'M L Sanjeev', location: 'Ranipet', x: 72, y: 22 },
   { id: 26, name: 'Rasheed', location: 'Gingee (Villupuram)', x: 66, y: 38 },
   { id: 27, name: 'Dr. Mohanraj', location: 'Thotiyam', x: 58, y: 63 },
+  { id: 28, name: 'Jayakumar', location: 'Mandhaveli, Chennai', x: 82, y: 17 },
+  { id: 29, name: 'Fathima', location: 'K.Pudhur (Madurai)', x: 49, y: 86 },
 ];
 
 export default function FranchiseNetwork() {
