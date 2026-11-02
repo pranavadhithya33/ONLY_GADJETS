@@ -1,6 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
+import Link from 'next/link';
 import Header from '@/components/Header';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import { CartProvider } from '@/context/CartContext';
@@ -32,6 +33,12 @@ export default function ClientLayoutWrapper({ children }) {
         }}>
           <div style={{ fontWeight: 800, color: '#fff', fontSize: 18, marginBottom: 8, letterSpacing: '-0.5px' }}>ONLY GADJETS</div>
           <div style={{ fontSize: 14 }}>India's Premium Wholesale Mobile Dealer</div>
+
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginTop: 16, flexWrap: 'wrap' }}>
+            <Link href="/" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontWeight: 600, fontSize: 13 }}>Home</Link>
+            <Link href="/about" style={{ color: '#f4a724', textDecoration: 'none', fontWeight: 700, fontSize: 13 }}>About Us</Link>
+            <Link href="/track" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontWeight: 600, fontSize: 13 }}>Track Shipment</Link>
+          </div>
           <div style={{ 
             marginTop: 32, 
             background: 'linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.08) 100%)', 

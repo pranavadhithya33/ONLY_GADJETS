@@ -4,7 +4,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { Search, Smartphone, Truck, User, LogOut, LayoutGrid, ShoppingCart } from 'lucide-react';
+import { Search, Smartphone, Truck, User, LogOut, LayoutGrid, ShoppingCart, Info } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import styles from '@/styles/Header.module.css';
 import { formatINR } from '@/lib/utils';
@@ -163,6 +163,10 @@ export default function Header() {
 
         <Link href="/track" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: '700', color: '#fff', opacity: 0.8, whiteSpace: 'nowrap', padding: '6px 12px', borderRadius: '20px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
           <Truck size={16} /> Track
+        </Link>
+
+        <Link href="/about" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: '700', color: '#fff', opacity: 0.8, whiteSpace: 'nowrap', padding: '6px 12px', borderRadius: '20px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+          <Info size={16} /> About Us
         </Link>
 
         <Link href="/cart" style={{ 
