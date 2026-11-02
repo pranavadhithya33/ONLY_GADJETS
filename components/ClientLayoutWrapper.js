@@ -42,13 +42,46 @@ export default function ClientLayoutWrapper({ children }) {
             border: '1px solid rgba(255,255,255,0.1)',
             boxShadow: '0 8px 32px rgba(0,0,0,0.2)'
           }}>
-            <h3 style={{ color: '#fff', fontSize: 20, fontWeight: 800, marginBottom: 24, letterSpacing: '-0.5px' }}>Contact Us</h3>
+            <h3 style={{ color: '#fff', fontSize: 20, fontWeight: 800, marginBottom: 18, letterSpacing: '-0.5px' }}>Contact Us</h3>
             
-            <div style={{ marginBottom: 32 }}>
-              <a href={`https://wa.me/917397189222`} target="_blank" rel="noopener noreferrer"
-                style={{ color: '#25d366', fontWeight: 700, fontSize: 15, display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(37, 211, 102, 0.12)', padding: '14px 28px', borderRadius: 30, textDecoration: 'none', border: '1px solid rgba(37, 211, 102, 0.25)', transition: 'all 0.2s' }}>
-                <span style={{ fontSize: 18 }}>📱</span> WhatsApp: +91 73971 89222
+            <div style={{ marginBottom: 28, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+              <a href="mailto:gadjetsonly@gmail.com"
+                style={{
+                  color: '#ffffff',
+                  fontWeight: 800,
+                  fontSize: 16,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 12,
+                  background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                  padding: '14px 28px',
+                  borderRadius: 36,
+                  textDecoration: 'none',
+                  border: '2px solid rgba(255, 255, 255, 0.3)',
+                  boxShadow: '0 0 25px rgba(37, 99, 235, 0.45)',
+                  transition: 'all 0.2s',
+                  flexWrap: 'wrap',
+                  justifyContent: 'center',
+                }}>
+                <span style={{ fontSize: 20 }}>✉️</span>
+                <span>Email Support:</span>
+                <span style={{
+                  background: '#fef08a',
+                  color: '#0f172a',
+                  fontWeight: 900,
+                  fontSize: '17px',
+                  padding: '4px 14px',
+                  borderRadius: '10px',
+                  letterSpacing: '0.5px',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
+                  display: 'inline-block',
+                }}>
+                  gadjetsonly@gmail.com
+                </span>
               </a>
+              <span style={{ fontSize: 13, color: '#38bdf8', fontWeight: 600 }}>
+                ⚡ Official Support &amp; Order Enquiries
+              </span>
             </div>
           </div>
           

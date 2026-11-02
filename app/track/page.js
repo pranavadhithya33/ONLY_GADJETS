@@ -84,7 +84,7 @@ export default function TrackingLandingPage() {
         </form>
         
         <div style={{ marginTop: 32, paddingTop: 24, borderTop: '1px dashed #e2e8f0', fontSize: 13, color: 'var(--text-secondary)' }}>
-          Need help? Contact us on <a href="https://wa.me/917397189222" style={{ color: 'var(--brand-primary)', fontWeight: 700 }}>WhatsApp</a>
+          Need help? Contact us at <a href="mailto:gadjetsonly@gmail.com" style={{ color: 'var(--brand-primary)', fontWeight: 700 }}>gadjetsonly@gmail.com</a>
         </div>
       </div>
     </div>

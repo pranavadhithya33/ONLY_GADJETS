@@ -8,10 +8,8 @@ import PaymentSelector from '@/components/PaymentSelector';
 import LivePriceDisplay from '@/components/LivePriceDisplay';
 import { formatINR, calcDiscountPct, calcSavings, calcPaymentDetails } from '@/lib/utils';
 import styles from '@/styles/ProductDetail.module.css';
-import { ChevronRight, CheckCircle, AlertCircle, Clock, ShoppingBag, MessageCircle, Package, Star, ShoppingCart } from 'lucide-react';
+import { ChevronRight, CheckCircle, AlertCircle, Clock, ShoppingBag, Mail, Package, Star, ShoppingCart } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
-
-const WHATSAPP_NUMBER = '917397189222';
 
 function StockBadge({ stock }) {
   if (stock === 0) return <span className={`${styles.stockBadge} ${styles.stockOut}`}><AlertCircle size={12} /> Out of Stock</span>;
@@ -133,8 +131,9 @@ export default function ProductDetailPage() {
     paymentText = `Half COD | Advance: ₹${advanceAmount} | Remaining: ₹${finalPrice - advanceAmount}`;
   }
 
-  const waMsg = `🛒 *Order Enquiry - ONLY GADJETS*\n\n📦 *Product:* ${product.name}\n💳 *Payment:* ${paymentText}\n💰 *Total:* ₹${finalPrice}\n\nPlease confirm availability.`;
-  const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(waMsg)}`;
+  const emailSubject = `Order Enquiry - ONLY GADJETS: ${product.name}`;
+  const emailBody = `Order Enquiry - ONLY GADJETS\n\nProduct: ${product.name}\nPayment: ${paymentText}\nTotal: ₹${finalPrice}\n\nPlease confirm availability.`;
+  const emailUrl = `mailto:gadjetsonly@gmail.com?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
 
   const handleBuyNow = () => {
     if (!inStock) return;
@@ -305,14 +304,13 @@ export default function ProductDetailPage() {
         </button>
 
         <a
-          href={waUrl}
-          target="_blank"
-          rel="noopener noreferrer"
+          href={emailUrl}
           className={`${styles.ctaBtn} ${styles.ctaWhatsApp}`}
-          id="whatsapp-order-btn"
+          style={{ background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)', color: '#fff' }}
+          id="email-order-btn"
         >
-          <MessageCircle size={20} strokeWidth={2.5} />
-          Enquire on WhatsApp
+          <Mail size={20} strokeWidth={2.5} />
+          Enquire via Email
         </a>
       </div>
 

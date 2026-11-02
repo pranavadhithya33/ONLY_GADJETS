@@ -4,13 +4,11 @@ import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import styles from '@/styles/OrderForm.module.css';
-import { formatINR, validatePhone, validatePincode, buildWhatsAppUrl, calcPaymentDetails } from '@/lib/utils';
+import { formatINR, validatePhone, validatePincode, calcPaymentDetails } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
 import { CheckCircle, ArrowLeft, ShoppingBag, User, Phone, MapPin, Hash, CreditCard, Download, Trash2, ChevronRight } from 'lucide-react';
 import { generateInvoice } from '@/lib/invoiceGenerator';
 import { useCart } from '@/context/CartContext';
-
-const WHATSAPP_NUMBER = '917397189222';
 
 function OrderFormContent() {
   const searchParams = useSearchParams();
@@ -168,20 +166,6 @@ function OrderFormContent() {
       
       if (isFromCart) clearCart();
 
-      // Auto-open WhatsApp
-      const waUrl = buildWhatsAppUrl(WHATSAPP_NUMBER, {
-        name: form.fullName.trim(),
-        phone: form.phone.trim(),
-        address: form.address.trim(),
-        pincode: form.pincode.trim(),
-        productName: isFromCart ? `${items.length} Items (Cart Order)` : productName,
-        paymentOption: selectedPayment,
-        finalPrice: finalOrderPrice,
-        advanceAmount: totals.advanceTotal,
-        orderId: data.id
-      });
-      window.open(waUrl, '_blank');
-
     } catch (err) {
       setSubmitError(err.message || 'Something went wrong. Please try again.');
     } finally {
@@ -191,18 +175,6 @@ function OrderFormContent() {
 
   // Success screen
   if (submitted) {
-    const waUrl = buildWhatsAppUrl(WHATSAPP_NUMBER, {
-      name: form.fullName,
-      phone: form.phone,
-      address: form.address,
-      pincode: form.pincode,
-      productName: isFromCart ? `${items.length} Items (Cart Order)` : productName,
-      paymentOption: selectedPayment,
-      finalPrice: finalOrderPrice,
-      advanceAmount: totals.advanceTotal,
-      orderId: fullOrderId,
-    });
-
     return (
       <div className={styles.page} style={{ justifyContent: 'center', minHeight: '70vh' }}>
         <div className={styles.successScreen}>
@@ -217,9 +189,9 @@ function OrderFormContent() {
             Order ID: <span>#{orderId}</span>
           </div>
           <div className={styles.successActions}>
-            <a href={waUrl} target="_blank" rel="noopener noreferrer"
-              className="btn btn-whatsapp btn-full btn-lg" style={{ marginBottom: 12 }}>
-              💬 Confirm on WhatsApp
+            <a href={`mailto:gadjetsonly@gmail.com?subject=${encodeURIComponent(`Order Enquiry - #${orderId}`)}`}
+              className="btn btn-full btn-lg" style={{ marginBottom: 12, background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)', color: '#fff', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+              ✉️ Contact Support (gadjetsonly@gmail.com)
             </a>
             {fullOrderId && (
               <Link href={`/track/${orderId}`} className="btn btn-primary btn-full btn-lg" style={{ background: '#f8f9fa', color: '#1a1a2e', border: '1px solid #e2e8f0' }}>

@@ -1,11 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowLeft, MessageSquare } from 'lucide-react';
+import { ArrowLeft, Mail } from 'lucide-react';
 
 export default function ForgotPasswordPage() {
-  const WHATSAPP_NUMBER = '917397189222';
-  const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Hi, I forgot my account password. Can you please help me reset it?')}`;
+  const mailUrl = `mailto:gadjetsonly@gmail.com?subject=${encodeURIComponent('Password Reset Request - Only Gadjets')}&body=${encodeURIComponent('Hi, I forgot my account password. Please help me reset it.\n\nMy Registered Phone/Email:\n')}`;
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0a0a0f', padding: '24px' }}>
@@ -16,23 +15,21 @@ export default function ForgotPasswordPage() {
 
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <div style={{ width: '56px', height: '56px', background: 'rgba(244, 167, 36, 0.1)', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-            <MessageSquare size={24} color="#f4a724" />
+            <Mail size={24} color="#f4a724" />
           </div>
           <h1 style={{ fontSize: '24px', fontWeight: '900', color: '#fff', marginBottom: '8px' }}>Forgot Password?</h1>
           <p style={{ color: '#6b7280', fontSize: '14px' }}>
-            Since we don't send emails for security, please contact us on WhatsApp to reset your password.
+            Please contact our support team at gadjetsonly@gmail.com to reset your password.
           </p>
         </div>
 
         <a
-          href={waUrl}
-          target="_blank"
-          rel="noopener noreferrer"
+          href={mailUrl}
           style={{ 
             display: 'block', 
             textAlign: 'center',
             padding: '14px', 
-            background: '#25d366', 
+            background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)', 
             color: '#fff', 
             border: 'none', 
             borderRadius: '12px', 
@@ -42,7 +39,7 @@ export default function ForgotPasswordPage() {
             cursor: 'pointer'
           }}
         >
-          Contact on WhatsApp →
+          Contact via Email →
         </a>
 
         <div style={{ textAlign: 'center', color: '#6b7280', fontSize: '12px', marginTop: '24px' }}>
