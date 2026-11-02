@@ -161,11 +161,41 @@ export default function Header() {
 
         <div style={{ width: '1px', height: '20px', background: 'rgba(255,255,255,0.1)', flexShrink: 0 }} />
 
-        <Link href="/track" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: '700', color: '#fff', opacity: 0.8, whiteSpace: 'nowrap', padding: '6px 12px', borderRadius: '20px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+        <Link href="/track" style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '6px', 
+          fontSize: '13px', 
+          fontWeight: '700', 
+          color: pathname?.startsWith('/track') ? '#f4a724' : '#fff', 
+          whiteSpace: 'nowrap', 
+          padding: '6px 14px', 
+          borderRadius: '20px', 
+          background: pathname?.startsWith('/track') ? 'rgba(244, 167, 36, 0.2)' : 'rgba(255, 255, 255, 0.08)', 
+          border: pathname?.startsWith('/track') ? '1px solid rgba(244, 167, 36, 0.4)' : '1px solid rgba(255, 255, 255, 0.2)',
+          textDecoration: 'none',
+          transition: 'all 0.2s',
+          cursor: 'pointer'
+        }}>
           <Truck size={16} /> Track
         </Link>
 
-        <Link href="/about" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: '700', color: '#fff', opacity: 0.8, whiteSpace: 'nowrap', padding: '6px 12px', borderRadius: '20px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+        <Link href="/about" style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '6px', 
+          fontSize: '13px', 
+          fontWeight: '700', 
+          color: (pathname === '/about' || pathname === '/about-us') ? '#f4a724' : '#fff', 
+          whiteSpace: 'nowrap', 
+          padding: '6px 14px', 
+          borderRadius: '20px', 
+          background: (pathname === '/about' || pathname === '/about-us') ? 'rgba(244, 167, 36, 0.2)' : 'rgba(255, 255, 255, 0.08)', 
+          border: (pathname === '/about' || pathname === '/about-us') ? '1px solid rgba(244, 167, 36, 0.4)' : '1px solid rgba(255, 255, 255, 0.2)',
+          textDecoration: 'none',
+          transition: 'all 0.2s',
+          cursor: 'pointer'
+        }}>
           <Info size={16} /> About Us
         </Link>
 

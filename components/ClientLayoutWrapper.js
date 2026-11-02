@@ -34,10 +34,22 @@ export default function ClientLayoutWrapper({ children }) {
           <div style={{ fontWeight: 800, color: '#fff', fontSize: 18, marginBottom: 8, letterSpacing: '-0.5px' }}>ONLY GADJETS</div>
           <div style={{ fontSize: 14 }}>India's Premium Wholesale Mobile Dealer</div>
 
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginTop: 16, flexWrap: 'wrap' }}>
-            <Link href="/" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontWeight: 600, fontSize: 13 }}>Home</Link>
-            <Link href="/about" style={{ color: '#f4a724', textDecoration: 'none', fontWeight: 700, fontSize: 13 }}>About Us</Link>
-            <Link href="/track" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontWeight: 600, fontSize: 13 }}>Track Shipment</Link>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginTop: 18, flexWrap: 'wrap' }}>
+            <Link href="/" style={{ 
+              display: 'inline-flex', alignItems: 'center', padding: '6px 16px', borderRadius: '20px', 
+              background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', 
+              color: '#fff', textDecoration: 'none', fontWeight: 600, fontSize: 13, transition: 'all 0.2s' 
+            }}>Home</Link>
+            <Link href="/about" style={{ 
+              display: 'inline-flex', alignItems: 'center', padding: '6px 16px', borderRadius: '20px', 
+              background: 'rgba(244, 167, 36, 0.18)', border: '1px solid rgba(244, 167, 36, 0.35)', 
+              color: '#f4a724', textDecoration: 'none', fontWeight: 700, fontSize: 13, transition: 'all 0.2s' 
+            }}>About Us</Link>
+            <Link href="/track" style={{ 
+              display: 'inline-flex', alignItems: 'center', padding: '6px 16px', borderRadius: '20px', 
+              background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', 
+              color: '#fff', textDecoration: 'none', fontWeight: 600, fontSize: 13, transition: 'all 0.2s' 
+            }}>Track Shipment</Link>
           </div>
           <div style={{ 
             marginTop: 32, 
